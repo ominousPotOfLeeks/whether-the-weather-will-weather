@@ -101,8 +101,6 @@ public class PlayerController : MonoBehaviour
             else if (selectedTile == terrainController.GetTileID("rock"))
             {
                 terrainController.SetTileAtPosition(mouseInWorld, "dirt");
-                int[] position = terrainController.VectorToGrid(mouseInWorld);
-                terrainController.terrainArray.RemoveCollider(position[0], position[1]);
                 //Debug.Log("rock");
             }
         }

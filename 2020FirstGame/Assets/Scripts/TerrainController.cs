@@ -46,14 +46,13 @@ public class TerrainController : MonoBehaviour
     public int chunkLength;
     public int LoadedChunksRadius;
 
-    public Tilemap topMap;
+    public Tilemap tilesNotSolid;
+    public Tilemap tilesSolid;
     public Tile grassTile;
     public Tile dirtTile;
     public Tile coalTile;
     public Tile ironTile;
     public Tile rockTile;
-
-    public GameObject BlockCollider;
 
     int terrainWidth;
     int terrainHeight;
@@ -62,7 +61,6 @@ public class TerrainController : MonoBehaviour
     public bool isGenerated = false;
 
     readonly Dictionary<string, int> tileIDs = new Dictionary<string, int>();
-    readonly Dictionary<string, Tile> tileNames = new Dictionary<string, Tile>();
     readonly Tile[] IDtiles = new Tile[5];
     readonly bool[] tileTypeIsSolid = new bool[5];
 
@@ -70,8 +68,6 @@ public class TerrainController : MonoBehaviour
     {
         readonly int chunkSize;
 
-        public Dictionary<Tuple<int, int>, Dictionary<Tuple<int, int>, GameObject>> chunkColliders = 
-            new Dictionary<Tuple<int, int>, Dictionary<Tuple<int, int>, GameObject>>();
         public HashSet<Tuple<int, int>> loadedChunks = new HashSet<Tuple<int, int>>();
         public Dictionary<Tuple<int, int>, int[,]> chunkLookUp = new Dictionary<Tuple<int, int>, int[,]>();
         public TerrainArray(int chunkLength)
@@ -107,47 +103,6 @@ public class TerrainController : MonoBehaviour
                 chunkY = y / chunkSize;
             }
             return new Tuple<int, int>(chunkX, chunkY);
-        }
-
-        public void AddCollider(int x, int y, Vector3Int position, GameObject collider)
-        {
-            Tuple<int, int> chunk = GetChunkCoords(x, y);
-            if (chunkColliders.ContainsKey(chunk))
-            {
-
-                chunkColliders[chunk][new Tuple<int, int>(x, y)] = Instantiate(collider, position, Quaternion.identity);
-            }
-            else
-            {
-                Dictionary<Tuple<int, int>, GameObject> positionObjects = new Dictionary<Tuple<int, int>, GameObject>
-                {
-                    [new Tuple<int, int>(x, y)] = Instantiate(collider, position, Quaternion.identity)
-                };
-                chunkColliders[chunk] = positionObjects;
-            }
-        }
-
-        public void RemoveCollider(int x, int y)
-        {
-            Tuple<int, int> chunk = GetChunkCoords(x, y);
-            if (chunkColliders.ContainsKey(chunk))
-            {
-                Destroy(chunkColliders[chunk][new Tuple<int, int>(x, y)]);
-                chunkColliders[chunk].Remove(new Tuple<int, int>(x, y));
-            }
-        }
-
-        public void RemoveAllCollidersInChunk(int chunkX, int chunkY)
-        {
-            Tuple<int, int> chunk = new Tuple<int, int>(chunkX, chunkY);
-            if (chunkColliders.ContainsKey(chunk))
-            {
-                foreach (GameObject obj in chunkColliders[chunk].Values)
-                {
-                    Destroy(obj.gameObject);
-                }
-                chunkColliders.Remove(chunk);
-            }
         }
 
         public int Get(int x, int y)
@@ -255,11 +210,6 @@ public class TerrainController : MonoBehaviour
         tileIDs.Add("coal", 2);
         tileIDs.Add("iron", 3);
         tileIDs.Add("rock", 4);
-        tileNames.Add("grass", grassTile);
-        tileNames.Add("dirt", dirtTile);
-        tileNames.Add("coal", coalTile);
-        tileNames.Add("iron", ironTile);
-        tileNames.Add("rock", rockTile);
         IDtiles[0] = dirtTile;
         IDtiles[1] = grassTile;
         IDtiles[2] = coalTile;
@@ -329,10 +279,26 @@ public class TerrainController : MonoBehaviour
     {
         Vector3Int roundedPosition = new Vector3Int(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y), 0);
         int[] gridPosition = VectorToGrid(position);
+        int newTileID = tileIDs[tileName];
+        int oldTileID = terrainArray.Get(gridPosition[0], gridPosition[1]);
+        terrainArray.Set(gridPosition[0], gridPosition[1], newTileID);
 
-        terrainArray.Set(gridPosition[0], gridPosition[1], tileIDs[tileName]);
-
-        topMap.SetTile(roundedPosition, tileNames[tileName]);
+        if (tileTypeIsSolid[newTileID])
+        {
+            tilesSolid.SetTile(roundedPosition, IDtiles[newTileID]);
+            if (!tileTypeIsSolid[oldTileID])
+            {
+                tilesNotSolid.SetTile(roundedPosition, null);
+            }
+        } 
+        else
+        {
+            tilesNotSolid.SetTile(roundedPosition, IDtiles[newTileID]);
+            if (tileTypeIsSolid[oldTileID])
+            {
+                tilesSolid.SetTile(roundedPosition, null);
+            }
+        }
     }
 
 
@@ -345,11 +311,6 @@ public class TerrainController : MonoBehaviour
             //first generation
             ClearMap(false);
             terrainArray = new TerrainArray(chunkLength);
-        } 
-        else
-        {
-            //generating new areas because player moved
-            //Debug.Log("loading chunks due to movement");
         }
 
         //first find chunks to load
@@ -388,21 +349,15 @@ public class TerrainController : MonoBehaviour
         }
         terrainArray.loadedChunks = nextLoadedChunks;
 
-        /*for (int i = 0; i < numRepetitions; i++)
-        {
-            terrainArray = GenerateIteration(terrainArray);
-        }//*/
-
 
     }
 
     public void UnloadChunk(int chunkX, int chunkY)
     {
-        //unloads tiles and colliders
+        //unloads all tiles in a chunk
 
         int chunkSize = terrainArray.GetChunkSize();
 
-        terrainArray.RemoveAllCollidersInChunk(chunkX, chunkY);
         int startx = chunkX * chunkSize;
         int endx = (chunkX + 1) * chunkSize;
         int starty = chunkY * chunkSize;
@@ -453,13 +408,13 @@ public class TerrainController : MonoBehaviour
 
     public int GenerateTile(int x, int y, bool doGeneration)
     {
-        int value;
+        int tileID;
         if (!doGeneration)
         {
-            value = terrainArray.Get(x, y);
-            if (value != -1)
+            tileID = terrainArray.Get(x, y);
+            if (tileID != -1)
             {
-                return value;
+                return tileID;
             }
             else
             {
@@ -473,42 +428,46 @@ public class TerrainController : MonoBehaviour
         //use output of perlin noise to determine tile type
         if (notSeed < grassWeight)
         {
-            value = 1;//Grass
+            tileID = 1;//Grass
         }
         else if (notSeed < grassWeight + coalWeight)
         {
-            value = 2;//Coal
+            tileID = 2;//Coal
         }
         else if (notSeed < grassWeight + coalWeight + rockWeight)
         {
-            value = 4;//Rock
+            tileID = 4;//Rock
         }
         else
         {
-            value = 0;//Dirt
+            tileID = 0;//Dirt
         }//*/
 
-        terrainArray.Set(x, y, value);
-        return value;
+        terrainArray.Set(x, y, tileID);
+        return tileID;
     }
 
     public void UnloadTile(int x, int y)
     {
         Vector3Int position = new Vector3Int(x, y, 0);
-        topMap.SetTile(position, null);
+        tilesNotSolid.SetTile(position, null);
+        tilesSolid.SetTile(position, null);
     }
 
-    public void LoadTile(int x, int y, int value)
+    public void LoadTile(int x, int y, int tileID)
     {
-        //make tile visible
+        
         Vector3Int position = new Vector3Int(x, y, 0);
-        topMap.SetTile(position, IDtiles[value]);
-        //Debug.Log(value);
 
-        //add collision
-        if (tileTypeIsSolid[value])
+        if (tileTypeIsSolid[tileID])
         {
-            terrainArray.AddCollider(x, y, position, BlockCollider);
+            //make tile solid and visible
+            tilesSolid.SetTile(position, IDtiles[tileID]);
+        } 
+        else
+        {
+            //make tile visible
+            tilesNotSolid.SetTile(position, IDtiles[tileID]);
         }
     }
 
@@ -601,7 +560,8 @@ public class TerrainController : MonoBehaviour
 
     public void ClearMap(bool complete)
     {
-        topMap.ClearAllTiles();
+        tilesNotSolid.ClearAllTiles();
+        tilesSolid.ClearAllTiles();
 
         if (complete)
         {
