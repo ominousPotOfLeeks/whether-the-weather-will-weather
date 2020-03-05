@@ -126,7 +126,7 @@ public class PlayerController : MonoBehaviour
             {
                 //update terrain
                 //terrainController.GenerateTerrain(x, y);
-                Debug.LogFormat("loading some terrain. coords from {0} to {1}", currentChunkCoords, nextChunkCoords);
+                //Debug.LogFormat("loading some terrain. coords from {0} to {1}", currentChunkCoords, nextChunkCoords);
                 terrainController.GenerateTerrain(nextChunkCoords.Item1, nextChunkCoords.Item2);
                 currentChunkCoords = nextChunkCoords;
             }

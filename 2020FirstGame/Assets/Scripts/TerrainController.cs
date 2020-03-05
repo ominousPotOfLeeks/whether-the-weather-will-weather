@@ -64,6 +64,8 @@ public class TerrainController : MonoBehaviour
     readonly Tile[] IDtiles = new Tile[5];
     readonly bool[] tileTypeIsSolid = new bool[5];
 
+    public EntityController entityController;
+
     public class TerrainArray
     {
         readonly int chunkSize;
@@ -370,6 +372,7 @@ public class TerrainController : MonoBehaviour
                 UnloadTile(x, y);
             }
         }
+        entityController.UnloadChunkEntities(new Tuple<int, int>(chunkX, chunkY));
     }
 
     public void GenerateChunk(int chunkX, int chunkY, bool doGeneration)
@@ -397,6 +400,7 @@ public class TerrainController : MonoBehaviour
         }
 
         //Debug.Log("terrain generation complete");
+        entityController.LoadChunkEntities(new Tuple<int, int>(chunkX, chunkY));
 
     }
 
@@ -442,6 +446,11 @@ public class TerrainController : MonoBehaviour
         {
             tileID = 0;//Dirt
         }//*/
+
+        if (x == 0 && y == 0)
+        {
+            entityController.AddEntity(x, y, "sheep");
+        }
 
         terrainArray.Set(x, y, tileID);
         return tileID;
