@@ -12,7 +12,6 @@ public class PlayerController : MonoBehaviour
     bool mouseDown = false;
 
     public float runSpeed;
-    public float cameraSpeed;
 
     private Rigidbody2D myRigidbody2D;
     //private Transform myTransform;
@@ -116,11 +115,11 @@ public class PlayerController : MonoBehaviour
         myRigidbody2D.velocity = Vector3.SmoothDamp(myRigidbody2D.velocity, targetVelocity, ref myVelocity, movementSmoothing);
         //myRigidbody2D.velocity = targetVelocity;
         //myTransform.transform.Translate(targetVelocity);
-        MoveCamera();
 
         //Check if player has entered different chunk
         if (terrainController.isGenerated && targetVelocity != new Vector3(0f, 0f, 0f))
         {
+            MoveCamera();
             Tuple<int, int> nextChunkCoords = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(myRigidbody2D.position.x), Mathf.RoundToInt(myRigidbody2D.position.y));
             if (!(nextChunkCoords.Item1 == currentChunkCoords.Item1 && nextChunkCoords.Item2 == currentChunkCoords.Item2))
             {
@@ -135,40 +134,30 @@ public class PlayerController : MonoBehaviour
 
     private void MoveCamera()
     {
-        Vector3 camPosition = cam.WorldToScreenPoint(myRigidbody2D.position);
-        int horizontalCameraMove = 0;
-        int verticalCameraMove = 0;
-        bool cameraIsMove = false;
+        Vector3 playerPosition = cam.WorldToScreenPoint(myRigidbody2D.position);
+        Vector3 newPosition = cam.WorldToScreenPoint(cam.transform.position);
 
-        if (camPosition.x < camThresholdLeft)
+        if (playerPosition.x < camThresholdLeft)
         {
-            horizontalCameraMove = -1;
             //Debug.Log("cam move left");
-            cameraIsMove = true;
+            newPosition.x -= camThresholdLeft - playerPosition.x;
         } 
-        else if (camPosition.x > camThresholdRight)
+        else if (playerPosition.x > camThresholdRight)
         {
-            horizontalCameraMove = 1;
             //Debug.Log("cam move right");
-            cameraIsMove = true;
+            newPosition.x -= camThresholdRight - playerPosition.x;
         }
-        if (camPosition.y < camThresholdTop)
+        if (playerPosition.y < camThresholdTop)
         {
-            verticalCameraMove = -1;
             //Debug.Log("cam move down");
-            cameraIsMove = true;
+            newPosition.y -= camThresholdTop - playerPosition.y;
         }
-        else if (camPosition.y > camThresholdBottom)
+        else if (playerPosition.y > camThresholdBottom)
         {
-            verticalCameraMove = 1;
             //Debug.Log("cam move up");
-            cameraIsMove = true;
+            newPosition.y -= camThresholdBottom - playerPosition.y;
         }
-        if (cameraIsMove)
-        {
-            cam.transform.position = new Vector3(cam.transform.position.x + horizontalCameraMove * cameraSpeed * 0.0004f, 
-                                                cam.transform.position.y + verticalCameraMove * cameraSpeed * 0.0004f, -10);
-        }
+        cam.transform.position = cam.ScreenToWorldPoint(newPosition);
     }
 
 

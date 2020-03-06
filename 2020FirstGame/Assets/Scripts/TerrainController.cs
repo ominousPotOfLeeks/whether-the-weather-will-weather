@@ -433,6 +433,10 @@ public class TerrainController : MonoBehaviour
         if (notSeed < grassWeight)
         {
             tileID = 1;//Grass
+            if (notSeed < grassWeight/1.5)
+            {
+                entityController.AddEntity(x, y, "sheep");
+            }
         }
         else if (notSeed < grassWeight + coalWeight)
         {
@@ -446,11 +450,6 @@ public class TerrainController : MonoBehaviour
         {
             tileID = 0;//Dirt
         }//*/
-
-        if (x == 0 && y == 0)
-        {
-            entityController.AddEntity(x, y, "sheep");
-        }
 
         terrainArray.Set(x, y, tileID);
         return tileID;

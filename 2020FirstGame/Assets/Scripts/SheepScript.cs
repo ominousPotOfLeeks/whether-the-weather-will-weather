@@ -8,51 +8,56 @@ public class SheepScript : MonoBehaviour
     private Rigidbody2D myRigidbody2D;
 
     int counter = 0;
-    int direction = 1;
     public int speed;
     int velocity;
+    int seed;
+
+    Vector2 direction;
 
     private void Awake()
     {
         myRigidbody2D = GetComponent<Rigidbody2D>();
+        direction = new Vector2(UnityEngine.Random.Range(0, 1), UnityEngine.Random.Range(0, 1));
     }
 
     private void Start()
     {
-        velocity = direction * speed;
         myRigidbody2D = GetComponent<Rigidbody2D>();
+        seed = UnityEngine.Random.Range(600, 1050);
     }
 
-    public void Step()
+    public bool Step()
     {
         //do whatever we do for one step
 
         //Next Goal: find destination, then move towards it a little bit
 
         //Current Function: wiggle back and forth I guess
+        bool moved = false;
 
         counter++;
-        if (counter > 200)
+        if (counter > seed)
         {
-            direction *= -1;
-            velocity = direction * speed;
+            direction = new Vector2(UnityEngine.Random.Range(-0.5f, 0.5f), UnityEngine.Random.Range(-0.5f, 0.5f));
             counter = 0;
-            Debug.Log("switch direction");
+            //Debug.Log(direction);
         } 
-        else if (counter > 100)
+        else if (counter > seed/2)
         {
-            velocity = direction * speed;
+            velocity = speed;
+            moved = true;
         } 
         else
         {
             velocity = 0;
-        }
+        }//*/
 
+        return moved;
     }
 
     private void FixedUpdate()
     {
-        myRigidbody2D.AddForce(new Vector2(velocity, velocity));
+        myRigidbody2D.AddForce(velocity * direction);
     }
 
 }
