@@ -257,12 +257,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   runSpeed: 600
-  cameraSpeed: 600
   selection: {fileID: 1110559057}
   terrainController: {fileID: 981015622}
   map: {fileID: 1785641012}
-  camThresholdPercentHorizontal: 20
-  camThresholdPercentVertical: 20
+  camThresholdPercentHorizontal: 50
+  camThresholdPercentVertical: 50
   gridUnit: 1
 --- !u!1 &188601360
 GameObject:
@@ -466,6 +465,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 241cfcdcea1f4044c8793905324c6a32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sheepChance: 0
+  sheepWeight: 25
   grassWeight: 28
   coalWeight: 10
   rockWeight: 11
@@ -481,8 +482,8 @@ MonoBehaviour:
   scale2: 0.01
   weight2: 40
   tilemapSize: {x: 120, y: 120, z: 1}
-  chunkLength: 4
-  LoadedChunksRadius: 10
+  chunkLength: 5
+  LoadedChunksRadius: 2
   tilesNotSolid: {fileID: 1785641012}
   tilesSolid: {fileID: 1054610552}
   grassTile: {fileID: 11400000, guid: 83a911ec9730da248805dfde79045e59, type: 2}

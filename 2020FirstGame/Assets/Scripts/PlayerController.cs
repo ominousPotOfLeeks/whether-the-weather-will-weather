@@ -7,9 +7,10 @@ using System;
 
 public class PlayerController : MonoBehaviour
 {
-    float horizontalInputValue = 0f;
-    float verticalInputValue = 0f;
-    bool mouseDown = false;
+    private float horizontalInputValue = 0f;
+    private float verticalInputValue = 0f;
+    private bool mouseDown = false;
+    private bool placingEntity = false;
 
     public float runSpeed;
 
@@ -84,26 +85,62 @@ public class PlayerController : MonoBehaviour
         //mouse click on coal
         if (Input.GetMouseButtonDown(0) || mouseDown)
         {
+            //click on entities
+            if (mouseDown == false)
+            {
+                OnClick();
+            }
+
             mouseDown = true;
             if (Input.GetMouseButtonUp(0))
             {
                 mouseDown = false;
             }
 
-            int selectedTile = terrainController.GetTileAtPosition(mouseInWorld);
-
-            if (selectedTile == terrainController.GetTileID("coal"))
-            {
-                terrainController.SetTileAtPosition(mouseInWorld, "dirt");
-                //Debug.Log("coal");
-            } 
-            else if (selectedTile == terrainController.GetTileID("rock"))
-            {
-                terrainController.SetTileAtPosition(mouseInWorld, "dirt");
-                //Debug.Log("rock");
-            }
+            OnClickContinuous(mouseInWorld);
         }
         
+    }
+
+    private void OnClickContinuous(Vector3 mouseInWorld)
+    {
+        //for events like dragging or colouring in where the mouse is still down
+
+        int selectedTile = terrainController.GetTileAtPosition(mouseInWorld);
+
+        if (selectedTile == terrainController.GetTileID("coal"))
+        {
+            terrainController.SetTileAtPosition(mouseInWorld, "dirt");
+            //Debug.Log("coal");
+        }
+        else if (selectedTile == terrainController.GetTileID("rock"))
+        {
+            terrainController.SetTileAtPosition(mouseInWorld, "dirt");
+            //Debug.Log("rock");
+        }
+    }
+
+    private void OnClick()
+    {
+        //
+
+        //Code to make clicking on something show its info
+        /*Vector2 mousePos2D = new Vector2(mouseInWorld.x, mouseInWorld.y);
+        RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
+        if (hit.collider != null)
+        {
+            Debug.Log(hit.collider.gameObject.name);
+            if (hit.collider.gameObject.name == "Sheep(Clone)")
+            {
+                SheepScript sh = hit.collider.gameObject.GetComponent<EntityScript>();
+                EntityController.Entity entity = sh.selfEntity;
+                Debug.LogFormat("chunk: {0}, x:{1}, y:{2}, xychunk: {3}",
+                    entity.chunk, hit.collider.gameObject.transform.position.x,
+                    hit.collider.gameObject.transform.position.y,
+                    terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(hit.collider.gameObject.transform.position.x),
+                    Mathf.RoundToInt(hit.collider.gameObject.transform.position.y)));
+            }
+        }//*/
     }
 
     void FixedUpdate()
@@ -116,10 +153,10 @@ public class PlayerController : MonoBehaviour
         //myRigidbody2D.velocity = targetVelocity;
         //myTransform.transform.Translate(targetVelocity);
 
+        MoveCamera();
         //Check if player has entered different chunk
         if (terrainController.isGenerated && targetVelocity != new Vector3(0f, 0f, 0f))
         {
-            MoveCamera();
             Tuple<int, int> nextChunkCoords = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(myRigidbody2D.position.x), Mathf.RoundToInt(myRigidbody2D.position.y));
             if (!(nextChunkCoords.Item1 == currentChunkCoords.Item1 && nextChunkCoords.Item2 == currentChunkCoords.Item2))
             {

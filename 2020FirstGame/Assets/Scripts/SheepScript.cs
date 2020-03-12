@@ -6,24 +6,41 @@ using UnityEngine;
 public class SheepScript : MonoBehaviour
 {
     private Rigidbody2D myRigidbody2D;
+    private EntityScript myEntityScript;
 
     int counter = 0;
     public int speed;
     int velocity;
     int seed;
+    float seedMultiplier = 1;
 
     Vector2 direction;
 
+    public EntityController.Entity selfEntity;
+
     private void Awake()
     {
-        myRigidbody2D = GetComponent<Rigidbody2D>();
-        direction = new Vector2(UnityEngine.Random.Range(0, 1), UnityEngine.Random.Range(0, 1));
-    }
-
-    private void Start()
-    {
+        InitializeEntityScript();
         myRigidbody2D = GetComponent<Rigidbody2D>();
         seed = UnityEngine.Random.Range(600, 1050);
+        ChangeDirection();
+    }
+    private void InitializeEntityScript()
+    {
+        myEntityScript = GetComponent<EntityScript>();
+        myEntityScript.step = Step;
+    }
+
+    private void ChangeDirection()
+    {
+        direction = new Vector2(UnityEngine.Random.Range(-0.5f, 0.5f), UnityEngine.Random.Range(-0.5f, 0.5f));
+        counter = 0;
+    }
+
+    private void SetDirection(Vector2 newDirection)
+    {
+        direction = newDirection;
+        counter = 0;
     }
 
     public bool Step()
@@ -38,18 +55,18 @@ public class SheepScript : MonoBehaviour
         counter++;
         if (counter > seed)
         {
-            direction = new Vector2(UnityEngine.Random.Range(-0.5f, 0.5f), UnityEngine.Random.Range(-0.5f, 0.5f));
-            counter = 0;
+            ChangeDirection();
+            seedMultiplier = 1;
             //Debug.Log(direction);
         } 
-        else if (counter > seed/2)
+        else if (counter > seed * seedMultiplier / 3)
         {
-            velocity = speed;
-            moved = true;
+            velocity = 0;
         } 
         else
         {
-            velocity = 0;
+            velocity = speed;
+            moved = true;
         }//*/
 
         return moved;
@@ -60,4 +77,13 @@ public class SheepScript : MonoBehaviour
         myRigidbody2D.AddForce(velocity * direction);
     }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (counter > seed * seedMultiplier / 3 && collision.relativeVelocity.magnitude != 0)
+        {
+            SetDirection((1 / collision.relativeVelocity.magnitude) * collision.relativeVelocity);
+            seedMultiplier = 0.1f;
+        }
+        
+    }
 }

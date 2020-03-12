@@ -8,6 +8,9 @@ using System;
 public class TerrainController : MonoBehaviour
 {
 
+    public int sheepChance;
+    [Range(0, 100)]
+    public int sheepWeight;
     [Range(0,100)]
     public int grassWeight;
     [Range(0, 100)]
@@ -60,17 +63,21 @@ public class TerrainController : MonoBehaviour
     [HideInInspector]
     public bool isGenerated = false;
 
+    readonly int numTileTypes = 5;
     readonly Dictionary<string, int> tileIDs = new Dictionary<string, int>();
-    readonly Tile[] IDtiles = new Tile[5];
-    readonly bool[] tileTypeIsSolid = new bool[5];
+    Tile[] IDtiles;
+    bool[] tileTypeIsSolid;
 
     public EntityController entityController;
+
+    HashSet<Tuple<int, int>> generatedEntityPositions = new HashSet<Tuple<int, int>>();
 
     public class TerrainArray
     {
         readonly int chunkSize;
 
         public HashSet<Tuple<int, int>> loadedChunks = new HashSet<Tuple<int, int>>();
+        public HashSet<Tuple<int, int>> nextLoadedChunks = new HashSet<Tuple<int, int>>();
         public Dictionary<Tuple<int, int>, int[,]> chunkLookUp = new Dictionary<Tuple<int, int>, int[,]>();
         public TerrainArray(int chunkLength)
         {
@@ -212,11 +219,13 @@ public class TerrainController : MonoBehaviour
         tileIDs.Add("coal", 2);
         tileIDs.Add("iron", 3);
         tileIDs.Add("rock", 4);
+        IDtiles = new Tile[numTileTypes];
         IDtiles[0] = dirtTile;
         IDtiles[1] = grassTile;
         IDtiles[2] = coalTile;
         IDtiles[3] = ironTile;
         IDtiles[4] = rockTile;
+        tileTypeIsSolid = new bool[numTileTypes];
         tileTypeIsSolid[0] = false;
         tileTypeIsSolid[1] = false;
         tileTypeIsSolid[2] = false;
@@ -316,7 +325,8 @@ public class TerrainController : MonoBehaviour
         }
 
         //first find chunks to load
-        HashSet<Tuple<int, int>> nextLoadedChunks = new HashSet<Tuple<int, int>>();
+        //HashSet<Tuple<int, int>> nextLoadedChunks = new HashSet<Tuple<int, int>>();
+        terrainArray.nextLoadedChunks.Clear();
 
         //put a for loop through chunks so that below function runs on one chunk at a time
         for (int i = centrex - LoadedChunksRadius; i < centrex + LoadedChunksRadius; i++)
@@ -324,7 +334,7 @@ public class TerrainController : MonoBehaviour
             for (int j = centrey - LoadedChunksRadius; j < centrey + LoadedChunksRadius; j++)
             {
                 Tuple<int, int> chunkCoords = new Tuple<int, int>(i, j);
-                nextLoadedChunks.Add(chunkCoords);
+                terrainArray.nextLoadedChunks.Add(chunkCoords);
 
                 //check if chunk is fresh (never generated)
                 if (!terrainArray.chunkLookUp.ContainsKey(chunkCoords))
@@ -343,13 +353,13 @@ public class TerrainController : MonoBehaviour
         //unload chunks that should no longer be loaded
         foreach (Tuple<int, int> chunk in terrainArray.loadedChunks)
         {
-            if (!nextLoadedChunks.Contains(chunk))
+            if (!terrainArray.nextLoadedChunks.Contains(chunk))
             {
                 UnloadChunk(chunk.Item1, chunk.Item2);
                 //Debug.Log("unloaded a chunk");
             }
         }
-        terrainArray.loadedChunks = nextLoadedChunks;
+        terrainArray.loadedChunks = new HashSet<Tuple<int, int>>(terrainArray.nextLoadedChunks);
 
 
     }
@@ -381,6 +391,8 @@ public class TerrainController : MonoBehaviour
         //          1 -> perlin noise
         //          2 -> perlin noise + random offset
 
+        entityController.LoadChunkEntities(new Tuple<int, int>(chunkX, chunkY));//load anything generated previously first
+
         //Debug.Log("generating terrain...");
         int chunkSize = terrainArray.GetChunkSize();
 
@@ -400,7 +412,6 @@ public class TerrainController : MonoBehaviour
         }
 
         //Debug.Log("terrain generation complete");
-        entityController.LoadChunkEntities(new Tuple<int, int>(chunkX, chunkY));
 
     }
 
@@ -429,13 +440,18 @@ public class TerrainController : MonoBehaviour
         //Debug.LogFormat("x: {0}, y: {1}", x, y);
         float notSeed = PointSeed(x, y);
 
+        if (x == 11 && y == 6)
+        {
+            entityController.AddBunchOfEntities(x, y, "miner", 6f, 0.1f);
+        }//*/
+
         //use output of perlin noise to determine tile type
         if (notSeed < grassWeight)
         {
             tileID = 1;//Grass
-            if (notSeed < grassWeight/1.5)
+            if (notSeed < sheepWeight && UnityEngine.Random.Range(0, 15) == 0)
             {
-                entityController.AddEntity(x, y, "sheep");
+                entityController.AddBunchOfEntities(x, y, "sheep", 6f, 0.1f);
             }
         }
         else if (notSeed < grassWeight + coalWeight)
