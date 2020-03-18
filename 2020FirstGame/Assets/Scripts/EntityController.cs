@@ -20,6 +20,8 @@ public class EntityController : MonoBehaviour
 
     public TerrainController terrainController;
 
+    public int coalResourceAmount;
+
     public Dictionary<string, GameObject> objNames;
 
     private void Start()
@@ -65,17 +67,11 @@ public class EntityController : MonoBehaviour
         {
             x = centreX + (Mathf.Pow(UnityEngine.Random.Range(0f, 1f), bias) * 2 - 1) * radius;
             y = centreY + (Mathf.Pow(UnityEngine.Random.Range(0f, 1f), bias) * 2 - 1) * radius;
-            Entity entity = AddEntity(x, y, objName);
-
-            if (terrainController.terrainArray.nextLoadedChunks.Contains(entity.chunk) || terrainController.terrainArray.loadedChunks.Contains(entity.chunk))
-            {
-                //adding entity to chunk that is already loaded, so entity will stay unloaded unless we load it now
-                LoadEntity(entity);
-            }
+            AddEntity(x, y, objName);
         }
     }
 
-    public Entity AddEntity(float x, float y, string objName)
+    public void AddEntity(float x, float y, string objName)
     {
         //add to array but don't load
         Tuple<int, int> chunk = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(x), Mathf.RoundToInt(y));
@@ -89,7 +85,11 @@ public class EntityController : MonoBehaviour
         }
         chunkEntities[chunk].Add(entity);//*/
 
-        return entity;
+        if (terrainController.terrainArray.nextLoadedChunks.Contains(entity.chunk) || terrainController.terrainArray.loadedChunks.Contains(entity.chunk))
+        {
+            //adding entity to chunk that is already loaded, so entity will stay unloaded unless we load it now
+            LoadEntity(entity);
+        }
     }
 
     public void RemoveEntity(GameObject obj)

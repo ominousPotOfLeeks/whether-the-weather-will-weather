@@ -147,7 +147,9 @@ public class TerrainController : MonoBehaviour
             chunkX    -1            0
             localX    0 1 2 3 ...   0 1 2 3 ...
             //*/
-            if (!chunkLookUp.ContainsKey(new Tuple<int, int>(chunkX, chunkY)))
+            Tuple<int, int> chunkCoords = new Tuple<int, int>(chunkX, chunkY);
+
+            if (!chunkLookUp.ContainsKey(chunkCoords))
             {
                 //Debug.Log("keys:");
                 /*string keys = "";
@@ -160,7 +162,7 @@ public class TerrainController : MonoBehaviour
                 //Debug.Log(new Tuple<int, int>(chunkX, chunkY));
                 return -1;
             }
-            int[,] chunk = chunkLookUp[new Tuple<int, int>(chunkX, chunkY)];
+            int[,] chunk = chunkLookUp[chunkCoords];
 
             return chunk[localX, localY];
         }
@@ -197,13 +199,14 @@ public class TerrainController : MonoBehaviour
             chunkX    -1            0
             localX    0 1 2 3 ...   0 1 2 3 ...
             //*/
+            Tuple<int, int> chunkCoords = new Tuple<int, int>(chunkX, chunkY);
 
-            if (!chunkLookUp.ContainsKey(new Tuple<int, int>(chunkX, chunkY)))
+            if (!chunkLookUp.ContainsKey(chunkCoords))
             {
                 //Debug.Log("adding chunk");
-                chunkLookUp.Add(new Tuple<int, int>(chunkX, chunkY), new int[chunkSize, chunkSize]);
+                chunkLookUp.Add(chunkCoords, new int[chunkSize, chunkSize]);
             }
-            int[,] chunk = chunkLookUp[new Tuple<int, int>(chunkX, chunkY)];
+            int[,] chunk = chunkLookUp[chunkCoords];
 
 
             //Debug.LogFormat("setting terrain at {0}, {1} (chunk at {2}, {3})", x, y, chunkX, chunkY);

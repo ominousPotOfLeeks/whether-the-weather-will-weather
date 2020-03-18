@@ -10,7 +10,6 @@ public class PlayerController : MonoBehaviour
     private float horizontalInputValue = 0f;
     private float verticalInputValue = 0f;
     private bool mouseDown = false;
-    private bool placingEntity = false;
 
     public float runSpeed;
 
@@ -20,8 +19,9 @@ public class PlayerController : MonoBehaviour
     private Vector3 myVelocity = Vector3.zero;
     private Tuple<int, int> currentChunkCoords = new Tuple<int, int>(0, 0);
 
-    public GameObject selection;
+    public GameObject cursorSelection;
     public TerrainController terrainController;
+    public HotbarController hotbarController;
     public Tilemap map;
 
     [Range(0, 100)]
@@ -78,9 +78,9 @@ public class PlayerController : MonoBehaviour
         //mouse selection
         Vector3 mouseOnScreen = Input.mousePosition;
         Vector3 mouseInWorld = cam.ScreenToWorldPoint(mouseOnScreen);
-        selection.transform.position = new Vector3(Mathf.RoundToInt(mouseInWorld.x),
+        cursorSelection.transform.position = new Vector3(Mathf.RoundToInt(mouseInWorld.x),
             Mathf.RoundToInt(mouseInWorld.y), 
-            selection.transform.position.z);
+            cursorSelection.transform.position.z);
 
         //mouse click on coal
         if (Input.GetMouseButtonDown(0) || mouseDown)
@@ -97,33 +97,31 @@ public class PlayerController : MonoBehaviour
                 mouseDown = false;
             }
 
-            OnClickContinuous(mouseInWorld);
+            OnClickContinuous();
         }
-        
+
+        float scrollAmount = Input.GetAxis("Mouse ScrollWheel");
+        if (scrollAmount > 0f)
+        {
+            hotbarController.ScrollSelection(true);
+        }
+        else if (scrollAmount < 0f)
+        {
+            hotbarController.ScrollSelection(false);
+        }
     }
 
-    private void OnClickContinuous(Vector3 mouseInWorld)
+    private void OnClickContinuous()
     {
         //for events like dragging or colouring in where the mouse is still down
 
-        int selectedTile = terrainController.GetTileAtPosition(mouseInWorld);
-
-        if (selectedTile == terrainController.GetTileID("coal"))
-        {
-            terrainController.SetTileAtPosition(mouseInWorld, "dirt");
-            //Debug.Log("coal");
-        }
-        else if (selectedTile == terrainController.GetTileID("rock"))
-        {
-            terrainController.SetTileAtPosition(mouseInWorld, "dirt");
-            //Debug.Log("rock");
-        }
+        
     }
 
     private void OnClick()
     {
         //
-
+        hotbarController.UseSelection();
         //Code to make clicking on something show its info
         /*Vector2 mousePos2D = new Vector2(mouseInWorld.x, mouseInWorld.y);
         RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
