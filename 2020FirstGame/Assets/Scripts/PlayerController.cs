@@ -115,13 +115,13 @@ public class PlayerController : MonoBehaviour
     {
         //for events like dragging or colouring in where the mouse is still down
 
-        
+        hotbarController.UseSelection();
+
     }
 
     private void OnClick()
     {
         //
-        hotbarController.UseSelection();
         //Code to make clicking on something show its info
         /*Vector2 mousePos2D = new Vector2(mouseInWorld.x, mouseInWorld.y);
         RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);

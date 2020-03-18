@@ -37,7 +37,7 @@ public class HotbarController : MonoBehaviour
         {
             change = 1;
         }
-        ChangeSelection((selection + change) % numSelections);
+        ChangeSelection((numSelections + selection + change) % numSelections);
     }
 
     public void ChangeSelection(int newSelection)
