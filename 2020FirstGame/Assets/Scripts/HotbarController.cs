@@ -6,7 +6,7 @@ using UnityEngine;
 public class HotbarController : MonoBehaviour
 {
     private int selection = 0;
-    private int numSelections = 4;
+    private int numSelections = 5;
 
     private SpriteRenderer spriteRenderer;
     public EntityController entityController;
@@ -14,20 +14,40 @@ public class HotbarController : MonoBehaviour
     public GameObject cursorSelection;
 
     public Sprite[] selectionSprites;
-    private Action[] selectionActions;
+    private Tuple<Action, Action>[] selectionActions;
 
     private void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.sprite = selectionSprites[0];
 
-        selectionActions = new Action[]
+        //Item1 is on entering mousedown state, Item2 is repeated every frame while the mouse is down
+        selectionActions = new Tuple<Action, Action>[]
         {
-            () => ReplaceTile("dirt"),
-            () => PlaceEntity("miner"),
-            () => PlaceEntity("sheep"),
-            () => ReplaceTile("rock")
+            new Tuple<Action, Action> (ToggleUnderCursor,           DoNothing),
+            new Tuple<Action, Action> (DoNothing,                   () => ReplaceTile("dirt")),
+            new Tuple<Action, Action> (() => PlaceEntity("miner"),  DoNothing),
+            new Tuple<Action, Action> (DoNothing,                   () => PlaceEntity("sheep")),
+            new Tuple<Action, Action> (DoNothing,                   () => ReplaceTile("rock"))
         };
+    }
+
+    public void DoNothing()
+    {
+        //just easier than a bunch of nulls and if statements
+    }
+
+    public void ToggleUnderCursor()
+    {
+        GameObject obj = entityController.GetEntityAtPosition(cursorSelection.transform.position);
+        if (obj != null)
+        {
+            ToggleableScript ts;
+            if ((ts = obj.GetComponent<ToggleableScript>()) != null)
+            {
+                ts.Toggle();
+            }
+        }
     }
 
     public void ScrollSelection(bool directionIsRight)
@@ -59,8 +79,13 @@ public class HotbarController : MonoBehaviour
         terrainController.SetTileAtPosition(position, tileName);
     }
 
-    public void UseSelection()
+    public void UseDiscontinuousSelection()
     {
-        selectionActions[selection]();
+        selectionActions[selection].Item1();
+    }
+
+    public void UseContinuousSelection()
+    {
+        selectionActions[selection].Item2();
     }
 }

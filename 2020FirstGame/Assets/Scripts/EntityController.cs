@@ -20,8 +20,6 @@ public class EntityController : MonoBehaviour
 
     public TerrainController terrainController;
 
-    public int coalResourceAmount;
-
     public Dictionary<string, GameObject> objNames;
 
     private void Start()
@@ -54,6 +52,26 @@ public class EntityController : MonoBehaviour
             this.step = step;
             this.objName = objName;
         }
+    }
+
+    public GameObject GetEntityAtPosition(Vector3 position)
+    {
+        GameObject obj = null;
+        RaycastHit2D hit = Physics2D.Raycast(position, Vector2.zero);
+        if (hit.collider != null)
+        {
+            obj = hit.collider.gameObject;
+        }
+        else
+        {
+            /*//NOT IMPLEMENTED because I think having colliders and doing raycasts is better
+            Tuple<int, int> chunk = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y));
+            if (chunkEntities.ContainsKey(chunk))
+            {
+
+            }//*/
+        }
+        return obj;
     }
 
     public void AddBunchOfEntities(int centreX, int centreY, string objName, float radius, float density, float bias=2f)

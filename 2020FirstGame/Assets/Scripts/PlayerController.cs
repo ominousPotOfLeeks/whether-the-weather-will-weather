@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour
     public GameObject cursorSelection;
     public TerrainController terrainController;
     public HotbarController hotbarController;
+    public Tilemap tilesInventory;
     public Tilemap map;
 
     [Range(0, 100)]
@@ -40,17 +41,13 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        myRigidbody2D = GetComponent<Rigidbody2D>();
+        //myTransform = GetComponent<Transform>();
+        cam = Camera.main;
         camThresholdLeft = camThresholdPercentHorizontal * Screen.width * 0.01f;
         camThresholdRight = (100 - camThresholdPercentHorizontal) * Screen.width * 0.01f;
         camThresholdTop = camThresholdPercentVertical * Screen.height * 0.01f;
         camThresholdBottom = (100 - camThresholdPercentVertical) * Screen.height * 0.01f;
-    }
-
-    void Awake()
-    {
-        myRigidbody2D = GetComponent<Rigidbody2D>();
-        //myTransform = GetComponent<Transform>();
-        cam = Camera.main;
     }
 
     // Update is called once per frame
@@ -67,6 +64,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.Z))
         {
+            //this probably doesn't work and I don't use it
             terrainController.isGenerated = false;
             terrainController.ClearMap(true);
         }
@@ -115,12 +113,13 @@ public class PlayerController : MonoBehaviour
     {
         //for events like dragging or colouring in where the mouse is still down
 
-        hotbarController.UseSelection();
+        hotbarController.UseContinuousSelection();
 
     }
 
     private void OnClick()
     {
+        hotbarController.UseDiscontinuousSelection();
         //
         //Code to make clicking on something show its info
         /*Vector2 mousePos2D = new Vector2(mouseInWorld.x, mouseInWorld.y);

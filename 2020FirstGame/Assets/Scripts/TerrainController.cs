@@ -57,6 +57,8 @@ public class TerrainController : MonoBehaviour
     public Tile ironTile;
     public Tile rockTile;
 
+    public int coalResourceAmount;
+
     int terrainWidth;
     int terrainHeight;
 
@@ -79,10 +81,10 @@ public class TerrainController : MonoBehaviour
         public HashSet<Tuple<int, int>> loadedChunks = new HashSet<Tuple<int, int>>();
         public HashSet<Tuple<int, int>> nextLoadedChunks = new HashSet<Tuple<int, int>>();
         public Dictionary<Tuple<int, int>, int[,]> chunkLookUp = new Dictionary<Tuple<int, int>, int[,]>();
+        public Dictionary<Tuple<int, int>, int[,]> chunkDataLookUp = new Dictionary<Tuple<int, int>, int[,]>();
         public TerrainArray(int chunkLength)
         {
             chunkSize = chunkLength;
-            Debug.Log("made terrain array");
         }
 
         public int GetChunkSize()
@@ -114,9 +116,8 @@ public class TerrainController : MonoBehaviour
             return new Tuple<int, int>(chunkX, chunkY);
         }
 
-        public int Get(int x, int y)
+        public Tuple<int, int, int, int> GetChunkAndLocalCoords(int x, int y)
         {
-            //always assumes chunk had been generated
             int chunkX;
             int chunkY;
             int localX; // position of tile relative to chunk
@@ -143,75 +144,79 @@ public class TerrainController : MonoBehaviour
                 localY = y - chunkY * chunkSize;
             }
 
+            return new Tuple<int, int, int, int>(chunkX, chunkY, localX, localY);
+        }
+
+        public int Get(int x, int y)
+        {
+            //always assumes chunk had been generated
+            Tuple<int, int, int, int> nums = GetChunkAndLocalCoords(x, y);
+            Tuple<int, int> chunkCoords = new Tuple<int, int>(nums.Item1, nums.Item2);
+            int localX = nums.Item3; // position of tile relative to chunk
+            int localY = nums.Item4;
             /*
-            chunkX    -1            0
-            localX    0 1 2 3 ...   0 1 2 3 ...
+            chunkCoords.Item1      -1             0
+            localX                  0 1 2 3 ...   0 1 2 3 ...
             //*/
-            Tuple<int, int> chunkCoords = new Tuple<int, int>(chunkX, chunkY);
 
             if (!chunkLookUp.ContainsKey(chunkCoords))
             {
-                //Debug.Log("keys:");
-                /*string keys = "";
-                foreach (Tuple<int, int> key in chunkLookUp.Keys)
-                {
-                    keys += (key.ToString());
-                }//*/
-                //Debug.Log(keys);
-                //Debug.Log("looking for:");
-                //Debug.Log(new Tuple<int, int>(chunkX, chunkY));
                 return -1;
             }
-            int[,] chunk = chunkLookUp[chunkCoords];
-
-            return chunk[localX, localY];
+            return chunkLookUp[chunkCoords][localX, localY];
         }
 
         public void Set(int x, int y, int value)
         {
-            int chunkX;
-            int chunkY;
-            int localX; // position of tile relative to chunk
-            int localY;
-
-            if (x < 0)
-            {
-                chunkX = (x - (chunkSize - 1)) / chunkSize;
-                localX = x - chunkX * chunkSize;// shift by -1 so that array starts at zero instead of 1
-            } 
-            else
-            {
-                chunkX = x / chunkSize;
-                localX = x - chunkX * chunkSize;
-            }
-            if (y < 0)
-            {
-                chunkY = (y - (chunkSize - 1)) / chunkSize;
-                localY = y - chunkY * chunkSize;
-            }
-            else
-            {
-                chunkY = y / chunkSize;
-                localY = y - chunkY * chunkSize;
-            }
-
-            /*
-            chunkX    -1            0
-            localX    0 1 2 3 ...   0 1 2 3 ...
-            //*/
-            Tuple<int, int> chunkCoords = new Tuple<int, int>(chunkX, chunkY);
+            Tuple<int, int, int, int> nums = GetChunkAndLocalCoords(x, y);
+            Tuple<int, int> chunkCoords = new Tuple<int, int>(nums.Item1, nums.Item2);
+            int localX = nums.Item3; // position of tile relative to chunk
+            int localY = nums.Item4;
 
             if (!chunkLookUp.ContainsKey(chunkCoords))
             {
                 //Debug.Log("adding chunk");
                 chunkLookUp.Add(chunkCoords, new int[chunkSize, chunkSize]);
             }
-            int[,] chunk = chunkLookUp[chunkCoords];
-
-
-            //Debug.LogFormat("setting terrain at {0}, {1} (chunk at {2}, {3})", x, y, chunkX, chunkY);
-            chunk[localX, localY] = value;
+            chunkLookUp[chunkCoords][localX, localY] = value;
             
+        }
+
+        public int GetData(int x, int y)
+        {
+            Tuple<int, int, int, int> nums = GetChunkAndLocalCoords(x, y);
+            Tuple<int, int> chunkCoords = new Tuple<int, int>(nums.Item1, nums.Item2);
+            int localX = nums.Item3; // position of tile relative to chunk
+            int localY = nums.Item4;
+
+            if (!chunkDataLookUp.ContainsKey(chunkCoords))
+            {
+                //Debug.Log("adding chunk");
+                return -1;
+            }
+            return chunkDataLookUp[chunkCoords][localX, localY];
+        }
+
+        public void SetData(int x, int y, int value)
+        {
+            Tuple<int, int, int, int> nums = GetChunkAndLocalCoords(x, y);
+            Tuple<int, int> chunkCoords = new Tuple<int, int>(nums.Item1, nums.Item2);
+            int localX = nums.Item3; // position of tile relative to chunk
+            int localY = nums.Item4;
+
+            if (!chunkDataLookUp.ContainsKey(chunkCoords))
+            {
+                //Debug.Log("adding chunk");
+                chunkDataLookUp.Add(chunkCoords, new int[chunkSize, chunkSize]);
+                for (int i = 0; i < chunkSize; i++)
+                {
+                    for (int j = 0; j < chunkSize; j++)
+                    {
+                        chunkDataLookUp[chunkCoords][i, j] = -1;
+                    }
+                }
+            }
+            chunkDataLookUp[chunkCoords][localX, localY] = value;
         }
     }
 
@@ -443,7 +448,7 @@ public class TerrainController : MonoBehaviour
         //Debug.LogFormat("x: {0}, y: {1}", x, y);
         float notSeed = PointSeed(x, y);
 
-        if (x == 11 && y == 6)
+        /*if (x == 11 && y == 6)
         {
             entityController.AddBunchOfEntities(x, y, "miner", 6f, 0.1f);
         }//*/
