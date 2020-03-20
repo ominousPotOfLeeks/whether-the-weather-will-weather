@@ -9,7 +9,9 @@ public class PlayerController : MonoBehaviour
 {
     private float horizontalInputValue = 0f;
     private float verticalInputValue = 0f;
-    private bool mouseDown = false;
+    bool mouseDown = false;
+    bool mouseRightDown = false;
+    public bool doContinuousMouseActions = true;
 
     public float runSpeed;
 
@@ -39,10 +41,13 @@ public class PlayerController : MonoBehaviour
 
     public int gridUnit;
 
+    private CursorScript cursorScript;
+
     private void Start()
     {
         myRigidbody2D = GetComponent<Rigidbody2D>();
         //myTransform = GetComponent<Transform>();
+        cursorScript = cursorSelection.GetComponent<CursorScript>();
         cam = Camera.main;
         camThresholdLeft = camThresholdPercentHorizontal * Screen.width * 0.01f;
         camThresholdRight = (100 - camThresholdPercentHorizontal) * Screen.width * 0.01f;
@@ -74,18 +79,14 @@ public class PlayerController : MonoBehaviour
         verticalInputValue = Input.GetAxisRaw("Vertical");
 
         //mouse selection
-        Vector3 mouseOnScreen = Input.mousePosition;
-        Vector3 mouseInWorld = cam.ScreenToWorldPoint(mouseOnScreen);
-        cursorSelection.transform.position = new Vector3(Mathf.RoundToInt(mouseInWorld.x),
-            Mathf.RoundToInt(mouseInWorld.y), 
-            cursorSelection.transform.position.z);
+        cursorScript.UpdateCursorPosition();
 
-        //mouse click on coal
+        //mouse left click
         if (Input.GetMouseButtonDown(0) || mouseDown)
         {
-            //click on entities
             if (mouseDown == false)
             {
+                doContinuousMouseActions = true;
                 OnClick();
             }
 
@@ -95,18 +96,48 @@ public class PlayerController : MonoBehaviour
                 mouseDown = false;
             }
 
-            OnClickContinuous();
+            if (doContinuousMouseActions)
+            {
+                OnClickContinuous();
+            }
+        }
+
+        //mouse right click
+        if (Input.GetMouseButtonDown(1) || mouseRightDown)
+        {
+            if (mouseRightDown == false)
+            {
+                OnRightClick();
+            }
+
+            mouseRightDown = true;
+            if (Input.GetMouseButtonUp(1))
+            {
+                mouseRightDown = false;
+            }
+
+            OnRightClickContinuous();
         }
 
         float scrollAmount = Input.GetAxis("Mouse ScrollWheel");
         if (scrollAmount > 0f)
         {
-            hotbarController.ScrollSelection(true);
+            hotbarController.ScrollSelection(false);
         }
         else if (scrollAmount < 0f)
         {
-            hotbarController.ScrollSelection(false);
+            hotbarController.ScrollSelection(true);
         }
+    }
+
+    private void OnRightClick()
+    {
+        hotbarController.UseRightSelection();
+    }
+
+    private void OnRightClickContinuous()
+    {
+        hotbarController.UseRightContinuousSelection();
     }
 
     private void OnClickContinuous()
@@ -120,24 +151,6 @@ public class PlayerController : MonoBehaviour
     private void OnClick()
     {
         hotbarController.UseDiscontinuousSelection();
-        //
-        //Code to make clicking on something show its info
-        /*Vector2 mousePos2D = new Vector2(mouseInWorld.x, mouseInWorld.y);
-        RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
-        if (hit.collider != null)
-        {
-            Debug.Log(hit.collider.gameObject.name);
-            if (hit.collider.gameObject.name == "Sheep(Clone)")
-            {
-                SheepScript sh = hit.collider.gameObject.GetComponent<EntityScript>();
-                EntityController.Entity entity = sh.selfEntity;
-                Debug.LogFormat("chunk: {0}, x:{1}, y:{2}, xychunk: {3}",
-                    entity.chunk, hit.collider.gameObject.transform.position.x,
-                    hit.collider.gameObject.transform.position.y,
-                    terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(hit.collider.gameObject.transform.position.x),
-                    Mathf.RoundToInt(hit.collider.gameObject.transform.position.y)));
-            }
-        }//*/
     }
 
     void FixedUpdate()

@@ -54,7 +54,37 @@ public class EntityController : MonoBehaviour
         }
     }
 
-    public GameObject GetEntityAtPosition(Vector3 position)
+    public bool ToggleEntityAtPosition(Vector3 position)
+    {
+        GameObject obj = GetObjectAtPosition(position);
+        if (obj != null)
+        {
+            ToggleableScript toggleableScript;
+            if ((toggleableScript = obj.GetComponent<ToggleableScript>()) != null)
+            {
+                toggleableScript.Toggle();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void RemoveEntityAtPosition(Vector3 position)
+    {
+        GameObject obj = GetObjectAtPosition(position);
+        if (obj != null)
+        {
+            EntityScript entityScript;
+            if ((entityScript = obj.GetComponent<EntityScript>()) != null)
+            {
+                Entity entity = entityScript.selfEntity;
+                chunkEntities[entity.chunk].Remove(entity);
+                Destroy(obj);
+            }
+        }
+    }
+
+    public GameObject GetObjectAtPosition(Vector3 position)
     {
         GameObject obj = null;
         RaycastHit2D hit = Physics2D.Raycast(position, Vector2.zero);
@@ -108,13 +138,6 @@ public class EntityController : MonoBehaviour
             //adding entity to chunk that is already loaded, so entity will stay unloaded unless we load it now
             LoadEntity(entity);
         }
-    }
-
-    public void RemoveEntity(GameObject obj)
-    {
-        //search through relevant chunk for the object
-
-        //(NOT IMPLEMENTED)
     }
 
     public void UnloadChunkEntities(Tuple<int, int> chunk)
@@ -177,19 +200,6 @@ public class EntityController : MonoBehaviour
     {
         if (terrainController.isGenerated)
         {
-            foreach (Tuple<int, int> chunk in terrainController.terrainArray.chunkLookUp.Keys)
-            {
-                if (!terrainController.terrainArray.loadedChunks.Contains(chunk) && chunkEntities.ContainsKey(chunk))
-                {
-                    foreach (Entity entity in chunkEntities[chunk])
-                    {
-                        if (entity.obj != null)
-                        {
-                            Debug.LogFormat("chunk: {0}, x:{1}, y:{2}", chunk, entity.x, entity.y);
-                        }
-                    }
-                }
-            }
 
             foreach (Tuple<int, int> chunk in terrainController.terrainArray.loadedChunks)
             {

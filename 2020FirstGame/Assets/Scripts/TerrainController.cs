@@ -72,8 +72,6 @@ public class TerrainController : MonoBehaviour
 
     public EntityController entityController;
 
-    HashSet<Tuple<int, int>> generatedEntityPositions = new HashSet<Tuple<int, int>>();
-
     public class TerrainArray
     {
         readonly int chunkSize;
