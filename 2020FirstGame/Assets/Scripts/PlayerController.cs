@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour
     public GameObject cursorSelection;
     public TerrainController terrainController;
     public HotbarController hotbarController;
+    public InventoryController inventoryController;
     public Tilemap tilesInventory;
     public Tilemap map;
 
@@ -72,6 +73,34 @@ public class PlayerController : MonoBehaviour
             //this probably doesn't work and I don't use it
             terrainController.isGenerated = false;
             terrainController.ClearMap(true);
+        }
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            inventoryController.ToggleInventory();
+        }
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            inventoryController.AddItem(terrainController.GetTileID("dirt"), 1);
+            inventoryController.AddItem(terrainController.GetTileID("coal"), 1);
+            inventoryController.AddItem(terrainController.GetTileID("iron"), 1);
+            inventoryController.AddItem(terrainController.GetTileID("rock"), 1);
+            inventoryController.AddItem(terrainController.GetTileID("sheep"), 1);
+        }
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            inventoryController.RemoveItem(terrainController.GetTileID("coal"));
+        }
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            inventoryController.RemoveItem(terrainController.GetTileID("dirt"));
+        }
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            inventoryController.RemoveItem(terrainController.GetTileID("iron"));
+        }
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            inventoryController.RemoveItem(terrainController.GetTileID("sheep"));
         }
 
         //get movement inputs

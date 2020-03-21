@@ -56,6 +56,8 @@ public class TerrainController : MonoBehaviour
     public Tile coalTile;
     public Tile ironTile;
     public Tile rockTile;
+    public Tile sheepTile;
+    public Tile minerTile;
 
     public int coalResourceAmount;
 
@@ -65,7 +67,7 @@ public class TerrainController : MonoBehaviour
     [HideInInspector]
     public bool isGenerated = false;
 
-    readonly int numTileTypes = 5;
+    readonly int numTileTypes = 7;
     readonly Dictionary<string, int> tileIDs = new Dictionary<string, int>();
     Tile[] IDtiles;
     bool[] tileTypeIsSolid;
@@ -218,25 +220,31 @@ public class TerrainController : MonoBehaviour
         }
     }
 
-    public void Start()
+    public void Awake()
     {
         tileIDs.Add("dirt", 0);
         tileIDs.Add("grass", 1);
         tileIDs.Add("coal", 2);
         tileIDs.Add("iron", 3);
         tileIDs.Add("rock", 4);
+        tileIDs.Add("sheep", 5);
+        tileIDs.Add("miner", 6);
         IDtiles = new Tile[numTileTypes];
         IDtiles[0] = dirtTile;
         IDtiles[1] = grassTile;
         IDtiles[2] = coalTile;
         IDtiles[3] = ironTile;
         IDtiles[4] = rockTile;
+        IDtiles[5] = sheepTile;
+        IDtiles[6] = minerTile;
         tileTypeIsSolid = new bool[numTileTypes];
         tileTypeIsSolid[0] = false;
         tileTypeIsSolid[1] = false;
         tileTypeIsSolid[2] = false;
         tileTypeIsSolid[3] = false;
         tileTypeIsSolid[4] = true;
+        tileTypeIsSolid[5] = true;
+        tileTypeIsSolid[6] = true;
 
         terrainWidth = tilemapSize.x;
         terrainHeight = tilemapSize.y;
