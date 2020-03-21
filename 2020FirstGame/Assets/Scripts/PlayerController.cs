@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     bool mouseDown = false;
     bool mouseRightDown = false;
     public bool doContinuousMouseActions = true;
+    bool inInventory = false;
 
     public float runSpeed;
 
@@ -77,30 +78,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E))
         {
             inventoryController.ToggleInventory();
-        }
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            inventoryController.AddItem(terrainController.GetTileID("dirt"), 1);
-            inventoryController.AddItem(terrainController.GetTileID("coal"), 1);
-            inventoryController.AddItem(terrainController.GetTileID("iron"), 1);
-            inventoryController.AddItem(terrainController.GetTileID("rock"), 1);
-            inventoryController.AddItem(terrainController.GetTileID("sheep"), 1);
-        }
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            inventoryController.RemoveItem(terrainController.GetTileID("coal"));
-        }
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            inventoryController.RemoveItem(terrainController.GetTileID("dirt"));
-        }
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            inventoryController.RemoveItem(terrainController.GetTileID("iron"));
-        }
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            inventoryController.RemoveItem(terrainController.GetTileID("sheep"));
+            inInventory = !inInventory;
         }
 
         //get movement inputs
@@ -161,25 +139,53 @@ public class PlayerController : MonoBehaviour
 
     private void OnRightClick()
     {
-        hotbarController.UseRightSelection();
+        if (inInventory)
+        {
+
+        } 
+        else
+        {
+            hotbarController.UseRightSelection();
+        }
+        
     }
 
     private void OnRightClickContinuous()
     {
-        hotbarController.UseRightContinuousSelection();
+        if (inInventory)
+        {
+
+        }
+        else
+        {
+            hotbarController.UseRightContinuousSelection();
+        }
     }
 
     private void OnClickContinuous()
     {
         //for events like dragging or colouring in where the mouse is still down
-
-        hotbarController.UseContinuousSelection();
+        if (inInventory)
+        {
+            //do inventory controls
+        }
+        else
+        {
+            hotbarController.UseContinuousSelection();
+        }
 
     }
 
     private void OnClick()
     {
-        hotbarController.UseDiscontinuousSelection();
+        if (inInventory)
+        {
+
+        }
+        else
+        {
+            hotbarController.UseDiscontinuousSelection();
+        }
     }
 
     void FixedUpdate()

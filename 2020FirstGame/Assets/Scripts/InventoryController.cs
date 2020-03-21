@@ -52,24 +52,7 @@ public class InventoryController : MonoBehaviour
     
     public void ToggleInventory()
     {
-        if (tilemapRenderer.enabled)
-        {
-            CloseInventory();
-            Debug.Log("closed inventory");
-        } else
-        {
-            OpenInventory();
-            Debug.Log("opened inventory");
-        }
-    }
-    public void OpenInventory()
-    {
-        tilemapRenderer.enabled = true;
-    }
-
-    public void CloseInventory()
-    {
-        tilemapRenderer.enabled = false;
+        tilemapRenderer.enabled = !tilemapRenderer.enabled;
     }
 
     public bool AddItem(int itemID, int numItems)
