@@ -41,7 +41,7 @@ public class WheelScript : MonoBehaviour
         {
             adjacentPosition = offset + position;
             boxCollider.enabled = false;
-            GameObject obj = entityController.GetObjectAtPosition(position);
+            GameObject obj = entityController.GetObjectAtPosition(adjacentPosition);
             boxCollider.enabled = true;
             if (obj != null)
             {
@@ -50,9 +50,7 @@ public class WheelScript : MonoBehaviour
                 {
                     friends.Add(entityScript.selfEntity);
                     Debug.LogFormat("added friend {0} at position {1}", obj.name, adjacentPosition);
-                    obj.transform.position = new Vector3(obj.transform.position.x + 0.2f, obj.transform.position.y, obj.transform.position.z);
                 }
-                Debug.Log("not entity");
             }
         }
     }
