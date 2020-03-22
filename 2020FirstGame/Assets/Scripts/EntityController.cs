@@ -17,6 +17,7 @@ public class EntityController : MonoBehaviour
 
     public GameObject sheep;
     public GameObject miner;
+    public GameObject wheel;
 
     public TerrainController terrainController;
 
@@ -27,7 +28,8 @@ public class EntityController : MonoBehaviour
         objNames = new Dictionary<string, GameObject>
         {
             ["sheep"] = sheep,
-            ["miner"] = miner
+            ["miner"] = miner,
+            ["wheel"] = wheel
         };
     }
 

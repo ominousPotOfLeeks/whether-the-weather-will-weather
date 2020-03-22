@@ -13,8 +13,6 @@ public class InventoryController : MonoBehaviour
 
     public int width; // in items
     public int height;
-    int halfWidth;
-    int halfHeight;
 
     public Tile grassTile;
     public Tile dirtTile;
@@ -23,8 +21,9 @@ public class InventoryController : MonoBehaviour
     public Tile rockTile;
     public Tile sheepTile;
     public Tile minerTile;
+    public Tile wheelTile;
 
-    readonly int numTileTypes = 7;
+    readonly int numTileTypes = 8;
     Tile[] IDtiles;
 
     private InventoryData inventoryData;
@@ -35,9 +34,6 @@ public class InventoryController : MonoBehaviour
         tilemapRenderer.enabled = false;
         tilemap = GetComponent<Tilemap>();
 
-        halfWidth = width / 2;
-        halfHeight = height / 2;
-
         IDtiles = new Tile[numTileTypes];
         IDtiles[0] = dirtTile;
         IDtiles[1] = grassTile;
@@ -46,6 +42,7 @@ public class InventoryController : MonoBehaviour
         IDtiles[4] = rockTile;
         IDtiles[5] = sheepTile;
         IDtiles[6] = minerTile;
+        IDtiles[7] = wheelTile;
 
         inventoryData = new InventoryData(width, height, tilemap, ref IDtiles);
     }

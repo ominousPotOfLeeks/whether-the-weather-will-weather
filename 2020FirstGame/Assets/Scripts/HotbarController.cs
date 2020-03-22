@@ -52,8 +52,8 @@ public class HotbarController : MonoBehaviour
         {
             new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(DoNothing),                     () => ReplaceTile("dirt"),  DoNothing,          RemoveUnderCursor),
             new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(DoNothing),                     () => ReplaceTile("coal"),  DoNothing,          RemoveUnderCursor),
+            new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(() => PlaceEntity("wheel")),    DoNothing,                  DoNothing,          RemoveUnderCursor),
             new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(() => PlaceEntity("miner")),    DoNothing,                  DoNothing,          RemoveUnderCursor),
-            new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(DoNothing),                     () => PlaceEntity("sheep"), DoNothing,          RemoveUnderCursor),
             new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(DoNothing),                     () => ReplaceTile("rock"),  DoNothing,          RemoveUnderCursor)
         };
 

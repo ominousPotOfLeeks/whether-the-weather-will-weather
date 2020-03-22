@@ -58,6 +58,7 @@ public class TerrainController : MonoBehaviour
     public Tile rockTile;
     public Tile sheepTile;
     public Tile minerTile;
+    public Tile wheelTile;
 
     public int coalResourceAmount;
 
@@ -67,7 +68,7 @@ public class TerrainController : MonoBehaviour
     [HideInInspector]
     public bool isGenerated = false;
 
-    readonly int numTileTypes = 7;
+    readonly int numTileTypes = 8;
     readonly Dictionary<string, int> tileIDs = new Dictionary<string, int>();
     Tile[] IDtiles;
     bool[] tileTypeIsSolid;
@@ -229,6 +230,7 @@ public class TerrainController : MonoBehaviour
         tileIDs.Add("rock", 4);
         tileIDs.Add("sheep", 5);
         tileIDs.Add("miner", 6);
+        tileIDs.Add("wheel", 7);
         IDtiles = new Tile[numTileTypes];
         IDtiles[0] = dirtTile;
         IDtiles[1] = grassTile;
@@ -237,6 +239,7 @@ public class TerrainController : MonoBehaviour
         IDtiles[4] = rockTile;
         IDtiles[5] = sheepTile;
         IDtiles[6] = minerTile;
+        IDtiles[7] = wheelTile;
         tileTypeIsSolid = new bool[numTileTypes];
         tileTypeIsSolid[0] = false;
         tileTypeIsSolid[1] = false;
@@ -245,6 +248,7 @@ public class TerrainController : MonoBehaviour
         tileTypeIsSolid[4] = true;
         tileTypeIsSolid[5] = true;
         tileTypeIsSolid[6] = true;
+        tileTypeIsSolid[7] = true;
 
         terrainWidth = tilemapSize.x;
         terrainHeight = tilemapSize.y;

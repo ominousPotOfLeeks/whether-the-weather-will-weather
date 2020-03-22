@@ -280,7 +280,7 @@ GameObject:
   m_Component:
   - component: {fileID: 188601362}
   - component: {fileID: 188601361}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: GridTerrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -360,6 +360,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sheep: {fileID: 1928452092277898599, guid: eec02ccd4c6758942ba978b1e9d480bd, type: 3}
   miner: {fileID: 5530820140892555034, guid: 5df66b317a02f844e88c16faaaa0e4ff, type: 3}
+  wheel: {fileID: 4634883756526501906, guid: ccfc54854d8e5a143a44608873cd21fd, type: 3}
   terrainController: {fileID: 981015622}
 --- !u!1 &519420028
 GameObject:
@@ -606,13 +607,14 @@ MonoBehaviour:
   terrainController: {fileID: 981015622}
   width: 5
   height: 3
-  grassTile: {fileID: 11400000, guid: f02ebef86dd270043a097b4e0f59bcf6, type: 2}
-  dirtTile: {fileID: 11400000, guid: db6ba11ce82e65342a75773fffecb50a, type: 2}
-  coalTile: {fileID: 11400000, guid: 6d0b760a6ad6d0a46b31b0de41e8c1cc, type: 2}
-  ironTile: {fileID: 11400000, guid: ed6f7092f89179b47af5a8494e98c04c, type: 2}
-  rockTile: {fileID: 11400000, guid: c1f06b136e28c4747a8fd9356077f4cd, type: 2}
-  sheepTile: {fileID: 11400000, guid: 1f788da921663f94aaaab0702196dd1a, type: 2}
-  minerTile: {fileID: 11400000, guid: 6df7d8fae4dddda48b2b8abdc046a7df, type: 2}
+  grassTile: {fileID: 0}
+  dirtTile: {fileID: 0}
+  coalTile: {fileID: 0}
+  ironTile: {fileID: 0}
+  rockTile: {fileID: 0}
+  sheepTile: {fileID: 0}
+  minerTile: {fileID: 0}
+  wheelTile: {fileID: 11400000, guid: d5b185c4b53123c45b529e9950fe979f, type: 2}
 --- !u!1 &628222836
 GameObject:
   m_ObjectHideFlags: 0
@@ -756,8 +758,9 @@ MonoBehaviour:
   coalTile: {fileID: 11400000, guid: 0e75754514ffc674ba7a429e1e09f6a2, type: 2}
   ironTile: {fileID: 11400000, guid: cc8f7f568ce490742ba9ba52d24a60de, type: 2}
   rockTile: {fileID: 11400000, guid: 9ddb2bfdf61e4b345a7fb4b37a969bf1, type: 2}
-  sheepTile: {fileID: 0}
-  minerTile: {fileID: 0}
+  sheepTile: {fileID: 11400000, guid: 684fdaf31e957f34183b062b2cb67394, type: 2}
+  minerTile: {fileID: 11400000, guid: f4500cfc1938b5b4db71d1fef2f2543d, type: 2}
+  wheelTile: {fileID: 11400000, guid: 7a01a3c6290072a4396929a4c86a4889, type: 2}
   coalResourceAmount: 50
   isGenerated: 0
   entityController: {fileID: 307515533}
@@ -789,7 +792,7 @@ GameObject:
   - component: {fileID: 1054610550}
   - component: {fileID: 1054610549}
   - component: {fileID: 1054610548}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: tilesSolid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1141,7 +1144,7 @@ GameObject:
   - component: {fileID: 1785641010}
   - component: {fileID: 1785641012}
   - component: {fileID: 1785641011}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: tilesNotSolid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1300,8 +1303,8 @@ MonoBehaviour:
   selectionTiles:
   - {fileID: 11400000, guid: db6ba11ce82e65342a75773fffecb50a, type: 2}
   - {fileID: 11400000, guid: 6d0b760a6ad6d0a46b31b0de41e8c1cc, type: 2}
+  - {fileID: 11400000, guid: d5b185c4b53123c45b529e9950fe979f, type: 2}
   - {fileID: 11400000, guid: 6df7d8fae4dddda48b2b8abdc046a7df, type: 2}
-  - {fileID: 11400000, guid: 1f788da921663f94aaaab0702196dd1a, type: 2}
   - {fileID: 11400000, guid: c1f06b136e28c4747a8fd9356077f4cd, type: 2}
   hotbarCenter: {x: 0, y: 0, z: 0}
   hotbarLength: 5
