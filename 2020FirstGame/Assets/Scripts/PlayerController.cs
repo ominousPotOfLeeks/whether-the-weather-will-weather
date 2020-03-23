@@ -50,6 +50,8 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         GetComponent<SpriteRenderer>().enabled = false;
+        cursorSelection.GetComponent<SpriteRenderer>().enabled = false;
+
         myRigidbody2D = GetComponent<Rigidbody2D>();
         //myTransform = GetComponent<Transform>();
         cursorScript = cursorSelection.GetComponent<CursorScript>();
@@ -63,82 +65,80 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //game state controls
+        //start game
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            //Debug.Log("space pressed");
             terrainController.GenerateTerrain(0, 0);
             terrainController.isGenerated = true;
             currentChunkCoords = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(myRigidbody2D.position.x), Mathf.RoundToInt(myRigidbody2D.position.y));
             hotbarController.ToggleVisible();
             GetComponent<SpriteRenderer>().enabled = true;
+            cursorSelection.GetComponent<SpriteRenderer>().enabled = true;
             startText.GetComponent<Text>().enabled = false;
         }
-        else if (Input.GetKeyDown(KeyCode.Z))
-        {
-            //this probably doesn't work and I don't use it
-            terrainController.isGenerated = false;
-            terrainController.ClearMap(true);
-        }
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            inventoryController.ToggleInventory();
-            inInventory = !inInventory;
-        }
 
-        //get movement inputs
-        horizontalInputValue = Input.GetAxisRaw("Horizontal");
-        verticalInputValue = Input.GetAxisRaw("Vertical");
-
-        //mouse selection
-        cursorScript.UpdateCursorPosition();
-
-        //mouse left click
-        if (Input.GetMouseButtonDown(0) || mouseDown)
+        if (terrainController.isGenerated)
         {
-            if (mouseDown == false)
+            if (Input.GetKeyDown(KeyCode.E))
             {
-                doContinuousMouseActions = true;
-                OnClick();
+                inventoryController.ToggleInventory();
+                inInventory = !inInventory;
             }
 
-            mouseDown = true;
-            if (Input.GetMouseButtonUp(0))
+            //get movement inputs
+            horizontalInputValue = Input.GetAxisRaw("Horizontal");
+            verticalInputValue = Input.GetAxisRaw("Vertical");
+
+            //mouse selection
+            cursorScript.UpdateCursorPosition();
+
+            //mouse left click
+            if (Input.GetMouseButtonDown(0) || mouseDown)
             {
-                mouseDown = false;
+                if (mouseDown == false)
+                {
+                    doContinuousMouseActions = true;
+                    OnClick();
+                }
+
+                mouseDown = true;
+                if (Input.GetMouseButtonUp(0))
+                {
+                    mouseDown = false;
+                }
+
+                if (doContinuousMouseActions)
+                {
+                    OnClickContinuous();
+                }
             }
 
-            if (doContinuousMouseActions)
+            //mouse right click
+            if (Input.GetMouseButtonDown(1) || mouseRightDown)
             {
-                OnClickContinuous();
-            }
-        }
+                if (mouseRightDown == false)
+                {
+                    OnRightClick();
+                }
 
-        //mouse right click
-        if (Input.GetMouseButtonDown(1) || mouseRightDown)
-        {
-            if (mouseRightDown == false)
-            {
-                OnRightClick();
-            }
+                mouseRightDown = true;
+                if (Input.GetMouseButtonUp(1))
+                {
+                    mouseRightDown = false;
+                }
 
-            mouseRightDown = true;
-            if (Input.GetMouseButtonUp(1))
-            {
-                mouseRightDown = false;
+                OnRightClickContinuous();
             }
 
-            OnRightClickContinuous();
-        }
-
-        float scrollAmount = Input.GetAxis("Mouse ScrollWheel");
-        if (scrollAmount > 0f)
-        {
-            hotbarController.ScrollSelection(false);
-        }
-        else if (scrollAmount < 0f)
-        {
-            hotbarController.ScrollSelection(true);
+            float scrollAmount = Input.GetAxis("Mouse ScrollWheel");
+            if (scrollAmount > 0f)
+            {
+                hotbarController.ScrollSelection(false);
+            }
+            else if (scrollAmount < 0f)
+            {
+                hotbarController.ScrollSelection(true);
+            }
         }
     }
 
@@ -195,26 +195,28 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        
-        Vector3 targetVelocity = new Vector2(horizontalInputValue * runSpeed * Time.fixedDeltaTime,
+        if (terrainController.isGenerated)
+        {
+            Vector3 targetVelocity = new Vector2(horizontalInputValue * runSpeed * Time.fixedDeltaTime,
             verticalInputValue * runSpeed * Time.fixedDeltaTime);
 
-        myRigidbody2D.velocity = Vector3.SmoothDamp(myRigidbody2D.velocity, targetVelocity, ref myVelocity, movementSmoothing);
-        //myRigidbody2D.velocity = targetVelocity;
-        //myTransform.transform.Translate(targetVelocity);
+            myRigidbody2D.velocity = Vector3.SmoothDamp(myRigidbody2D.velocity, targetVelocity, ref myVelocity, movementSmoothing);
+            //myRigidbody2D.velocity = targetVelocity;
+            //myTransform.transform.Translate(targetVelocity);
 
-        MoveCamera();
-        //Check if player has entered different chunk
-        if (terrainController.isGenerated && targetVelocity != new Vector3(0f, 0f, 0f))
-        {
-            Tuple<int, int> nextChunkCoords = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(myRigidbody2D.position.x), Mathf.RoundToInt(myRigidbody2D.position.y));
-            if (!(nextChunkCoords.Item1 == currentChunkCoords.Item1 && nextChunkCoords.Item2 == currentChunkCoords.Item2))
+            MoveCamera();
+            //Check if player has entered different chunk
+            if (targetVelocity != Vector3.zero)
             {
-                //update terrain
-                //terrainController.GenerateTerrain(x, y);
-                //Debug.LogFormat("loading some terrain. coords from {0} to {1}", currentChunkCoords, nextChunkCoords);
-                terrainController.GenerateTerrain(nextChunkCoords.Item1, nextChunkCoords.Item2);
-                currentChunkCoords = nextChunkCoords;
+                Tuple<int, int> nextChunkCoords = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(myRigidbody2D.position.x), Mathf.RoundToInt(myRigidbody2D.position.y));
+                if (!(nextChunkCoords.Item1 == currentChunkCoords.Item1 && nextChunkCoords.Item2 == currentChunkCoords.Item2))
+                {
+                    //update terrain
+                    //terrainController.GenerateTerrain(x, y);
+                    //Debug.LogFormat("loading some terrain. coords from {0} to {1}", currentChunkCoords, nextChunkCoords);
+                    terrainController.GenerateTerrain(nextChunkCoords.Item1, nextChunkCoords.Item2);
+                    currentChunkCoords = nextChunkCoords;
+                }
             }
         }
     }

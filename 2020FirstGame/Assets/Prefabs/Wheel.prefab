@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 8163250071157990652}
   - component: {fileID: 844967844321503688}
   - component: {fileID: 6704962664091295719}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Wheel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -99,7 +99,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9369df1230b1b9b4096ab6ec4aea350f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wheelSpeed: 5
+  wheelSpeed: 0.1
+  moving: 0
+  grid: {fileID: 3422127444688887560, guid: f0ba7d000342ae849ac46ba40f0bc8eb, type: 3}
+  blankTile: {fileID: 11400000, guid: 83a911ec9730da248805dfde79045e59, type: 2}
 --- !u!114 &6772738830066526593
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,6 +140,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 211649dec9d05e048b8204f2b16c8aca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  parentToggleableScript: {fileID: 0}
+  isParent: 0
 --- !u!61 &6704962664091295719
 BoxCollider2D:
   m_ObjectHideFlags: 0
