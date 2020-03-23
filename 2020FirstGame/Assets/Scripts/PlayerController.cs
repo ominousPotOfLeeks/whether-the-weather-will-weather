@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.UI;
 using UnityEngine.Tilemaps;
 using System;
 
@@ -28,6 +29,7 @@ public class PlayerController : MonoBehaviour
     public InventoryController inventoryController;
     public Tilemap tilesInventory;
     public Tilemap map;
+    public Text startText;
 
     [Range(0, 100)]
     public int camThresholdPercentHorizontal; //percentage of screen width from left edge
@@ -47,6 +49,7 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        GetComponent<SpriteRenderer>().enabled = false;
         myRigidbody2D = GetComponent<Rigidbody2D>();
         //myTransform = GetComponent<Transform>();
         cursorScript = cursorSelection.GetComponent<CursorScript>();
@@ -67,7 +70,9 @@ public class PlayerController : MonoBehaviour
             terrainController.GenerateTerrain(0, 0);
             terrainController.isGenerated = true;
             currentChunkCoords = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(myRigidbody2D.position.x), Mathf.RoundToInt(myRigidbody2D.position.y));
-
+            hotbarController.ToggleVisible();
+            GetComponent<SpriteRenderer>().enabled = true;
+            startText.GetComponent<Text>().enabled = false;
         }
         else if (Input.GetKeyDown(KeyCode.Z))
         {

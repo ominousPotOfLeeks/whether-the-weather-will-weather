@@ -6,7 +6,7 @@ using UnityEngine;
 public class MinerScript : MonoBehaviour
 {
     public TerrainController terrainController;
-    private EntityScript myEntityScript;
+    private EntityScript entityScript;
     private ToggleableScript toggleableScript;
 
     public int mineIncrementSize;
@@ -22,8 +22,8 @@ public class MinerScript : MonoBehaviour
 
     private void InitializeEntityScript()
     {
-        myEntityScript = GetComponent<EntityScript>();
-        myEntityScript.step = Step;
+        entityScript = GetComponent<EntityScript>();
+        entityScript.step = Step;
     }
 
     private Tuple<int, int> MineResource(int totalResourceAmount, int increment)

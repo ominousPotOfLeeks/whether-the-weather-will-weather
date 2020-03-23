@@ -5,8 +5,9 @@ using UnityEngine;
 public class WheelScript : MonoBehaviour
 {
     private EntityController entityController;
-    private EntityScript myEntityScript;
+    private EntityScript entityScript;
     private ToggleableScript toggleableScript;
+    private WheelableScript wheelableScript;
 
     private BoxCollider2D boxCollider;
 
@@ -20,15 +21,22 @@ public class WheelScript : MonoBehaviour
     void Awake()
     {
         InitializeEntityScript();
+        InitializeWheelableScript();
         toggleableScript = GetComponent<ToggleableScript>();
         boxCollider = GetComponent<BoxCollider2D>();
         entityController = GameObject.Find("EntityController").GetComponent<EntityController>();
     }
 
+    private void InitializeWheelableScript()
+    {
+        wheelableScript = GetComponent<WheelableScript>();
+        wheelableScript.parentEntity = entityScript.selfEntity;//set parent to self until part of a group
+    }
+
     private void InitializeEntityScript()
     {
-        myEntityScript = GetComponent<EntityScript>();
-        myEntityScript.step = Step;
+        entityScript = GetComponent<EntityScript>();
+        entityScript.step = Step;
     }
 
     private void LookForFriends()
@@ -40,9 +48,7 @@ public class WheelScript : MonoBehaviour
         foreach (Vector3 offset in adjacentPositions)
         {
             adjacentPosition = offset + position;
-            boxCollider.enabled = false;
             GameObject obj = entityController.GetObjectAtPosition(adjacentPosition);
-            boxCollider.enabled = true;
             if (obj != null)
             {
                 EntityScript entityScript;
@@ -66,6 +72,8 @@ public class WheelScript : MonoBehaviour
             {
                 Debug.Log("wheeling");
                 LookForFriends();
+
+                
             }
         } else
         {

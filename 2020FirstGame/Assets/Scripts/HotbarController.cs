@@ -7,7 +7,7 @@ using UnityEngine.Tilemaps;
 public class HotbarController : MonoBehaviour
 {
     private int selection = 0;
-    private int numSelections = 5;
+    private int numSelections;
 
     public PlayerController playerController;
     public EntityController entityController;
@@ -35,6 +35,9 @@ public class HotbarController : MonoBehaviour
 
     private void Start()
     {
+        ToggleVisible();
+        numSelections = selectionTiles.Length;
+
         tilesHotbar = GetComponent<Tilemap>();
         hotbarCenter = new Vector3Int(0, 0, 0);
         ChangeSelection(0);
@@ -45,7 +48,7 @@ public class HotbarController : MonoBehaviour
         float zPosition = transform.position.z;
         Vector3 position = cam.ScreenToWorldPoint(new Vector3(horizontalPosition, verticalPosition, 0));
         transform.position = new Vector3(position.x, position.y, zPosition);
-        hotbarSelection.transform.position = transform.position;
+        hotbarSelection.transform.position = transform.position + new Vector3(0, 0, -1);
 
         //Item1 is on entering mousedown state, Item2 is repeated every frame while the mouse is down
         selectionActions = new Tuple<Action, Action, Action, Action>[]
@@ -54,10 +57,17 @@ public class HotbarController : MonoBehaviour
             new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(DoNothing),                     () => ReplaceTile("coal"),  DoNothing,          RemoveUnderCursor),
             new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(() => PlaceEntity("wheel")),    DoNothing,                  DoNothing,          RemoveUnderCursor),
             new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(() => PlaceEntity("miner")),    DoNothing,                  DoNothing,          RemoveUnderCursor),
+            new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(DoNothing),                     () => PlaceEntity("sheep"), DoNothing,          RemoveUnderCursor),
             new Tuple<Action, Action, Action, Action> (() => ToggleIfAbleElseDo(DoNothing),                     () => ReplaceTile("rock"),  DoNothing,          RemoveUnderCursor)
         };
 
         cursorScript = cursorSelection.GetComponent<CursorScript>();
+    }
+
+    public void ToggleVisible()
+    {
+        GetComponent<TilemapRenderer>().enabled = !GetComponent<TilemapRenderer>().enabled;
+        hotbarSelection.GetComponent<SpriteRenderer>().enabled = !hotbarSelection.GetComponent<SpriteRenderer>().enabled;
     }
 
     public void DoNothing()
