@@ -82,7 +82,7 @@ public class HotbarController : MonoBehaviour
 
     public void ToggleIfAbleElseDo(Action action)
     {
-        if (entityController.ToggleEntityAtPosition(cursorScript.mouseWorldPosition))
+        if (entityController.ToggleAtPosition(cursorScript.mouseWorldPosition))
         {
             playerController.doContinuousMouseActions = false;
         } 
@@ -94,7 +94,7 @@ public class HotbarController : MonoBehaviour
 
     public void ToggleUnderCursor()
     {
-        entityController.ToggleEntityAtPosition(cursorScript.mouseWorldPosition);
+        entityController.ToggleAtPosition(cursorScript.mouseWorldPosition);
     }
 
     public void ScrollSelection(bool directionIsRight)

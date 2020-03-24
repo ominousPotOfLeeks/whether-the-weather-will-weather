@@ -56,7 +56,7 @@ public class EntityController : MonoBehaviour
         }
     }
 
-    public bool ToggleEntityAtPosition(Vector3 position)
+    public bool ToggleAtPosition(Vector3 position)
     {
         GameObject obj = GetObjectAtPosition(position);
         if (obj != null)
@@ -197,6 +197,18 @@ public class EntityController : MonoBehaviour
         entity.obj.GetComponent<EntityScript>().selfEntity = entity;
     }
 
+    public void EntityMovedSoUpdateChunk(Entity entity)
+    {
+        //check if chunk changed
+        Vector2 position = entity.obj.transform.position;
+        Tuple<int, int> newChunk = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y));
+        if (entity.chunk != newChunk)
+        {
+            //will need to be careful making this particular part threaded
+            entitiesWhichChangedChunk.Add(new Tuple<Entity, Tuple<int, int>>(entity, newChunk));
+        }
+    }
+
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -217,13 +229,7 @@ public class EntityController : MonoBehaviour
                         else if (entity.step()) //if moved during step
                         {
                             //check if chunk changed
-                            Vector2 position = entity.obj.transform.position;
-                            Tuple<int, int> newChunk = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y));
-                            if (entity.chunk != newChunk)
-                            {
-                                //will need to be careful making this particular part threaded
-                                entitiesWhichChangedChunk.Add(new Tuple<Entity, Tuple<int, int>> (entity, newChunk));
-                            }
+                            EntityMovedSoUpdateChunk(entity);
                         }
                     }
                 }

@@ -412,11 +412,11 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 1
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 6
+  orthographic size: 7
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -816,8 +816,8 @@ MonoBehaviour:
   scale2: 0.01
   weight2: 40
   tilemapSize: {x: 120, y: 120, z: 1}
-  chunkLength: 5
-  LoadedChunksRadius: 5
+  chunkLength: 2
+  LoadedChunksRadius: 10
   tilesNotSolid: {fileID: 1785641012}
   tilesSolid: {fileID: 1054610552}
   grassTile: {fileID: 11400000, guid: 83a911ec9730da248805dfde79045e59, type: 2}
@@ -1552,8 +1552,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c1f06b136e28c4747a8fd9356077f4cd, type: 2}
   hotbarCenter: {x: 0, y: 0, z: 0}
   hotbarLength: 5
-  horizontalPositionPercentage: 15
-  verticalPositionPercentage: 77
+  horizontalPositionPercentage: 27
+  verticalPositionPercentage: 85
 --- !u!483693784 &1875301774
 TilemapRenderer:
   m_ObjectHideFlags: 0

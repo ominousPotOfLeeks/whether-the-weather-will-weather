@@ -304,6 +304,16 @@ public class TerrainController : MonoBehaviour
         return tileIDs[tileName];
     }
 
+    public Tile GetTile(int tileID)
+    {
+        return IDtiles[tileID];
+    }
+
+    public bool IsTileTypeSolid(int tileID)
+    {
+        return IsTileTypeSolid(tileID);
+    }
+
     public void SetTileAtPosition(Vector3 position, string tileName)
     {
         Vector3Int roundedPosition = new Vector3Int(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y), 0);

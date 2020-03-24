@@ -77,6 +77,11 @@ public class PlayerController : MonoBehaviour
             startText.GetComponent<Text>().enabled = false;
         }
 
+        if (Input.GetKey("escape"))
+        {
+            Application.Quit();
+        }
+
         if (terrainController.isGenerated)
         {
             if (Input.GetKeyDown(KeyCode.E))
