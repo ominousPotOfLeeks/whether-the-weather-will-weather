@@ -100,8 +100,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   totalWheelPower: 0
-  wheelPower: 5
-  wheelMass: 10
   wheelSpeed: 3
   moving: 0
   grid: {fileID: 3422127444688887560, guid: f0ba7d000342ae849ac46ba40f0bc8eb, type: 3}
@@ -145,6 +143,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   parentToggleableScript: {fileID: 0}
   isParent: 0
+  power: 5
+  mass: 10
 --- !u!61 &6704962664091295719
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -8,6 +8,8 @@ public class MinerScript : MonoBehaviour
     public TerrainController terrainController;
     private EntityScript entityScript;
     private ToggleableScript toggleableScript;
+    private WheelableScript wheelableScript;
+    private BoxCollider2D boxCollider;
 
     public int mineIncrementSize;
 
@@ -17,13 +19,29 @@ public class MinerScript : MonoBehaviour
     {
         InitializeEntityScript();
         toggleableScript = GetComponent<ToggleableScript>();
-        terrainController = GameObject.Find("TerrainController").GetComponent<TerrainController>();
+        boxCollider = GetComponent<BoxCollider2D>();
+        terrainController = GameObject.Find("TerrainController").GetComponent<TerrainController>();//replace this with something better
+        InitializeWheelableScript();
+    }
+
+    private void InitializeWheelableScript()
+    {
+        wheelableScript = GetComponent<WheelableScript>();
+        wheelableScript.parentEntity = entityScript.selfEntity;//set parent to self until part of a group
+        wheelableScript.parentToggleableScript = toggleableScript;
+        wheelableScript.isParent = true;
+        wheelableScript.ToggleMovingState = ToggleMovingState;
     }
 
     private void InitializeEntityScript()
     {
         entityScript = GetComponent<EntityScript>();
         entityScript.step = Step;
+    }
+
+    public void ToggleMovingState()
+    {
+        boxCollider.enabled = !boxCollider.enabled;
     }
 
     private Tuple<int, int> MineResource(int totalResourceAmount, int increment)

@@ -19,8 +19,6 @@ public class WheelScript : MonoBehaviour
     private GameObject tilemapObject;
 
     public int totalWheelPower;//force with which tilemap is pushed
-    public int wheelPower;//power of one wheel
-    public int wheelMass;
     public float wheelSpeed;
 
     public bool moving;
@@ -105,85 +103,82 @@ public class WheelScript : MonoBehaviour
     {
         //wheel
         moving = wheelableScript.parentToggleableScript.state;
-        if (moving)
+        if (moving && wheelableScript.isParent)
         {
-            if (wheelableScript.isParent)
+            if (!doneLookingForFriends)
             {
-                if (!doneLookingForFriends)
+                LookForFriends();
+                doneLookingForFriends = true;
+                Debug.Log("initiating car");
+
+
+                Vector3 position = transform.position;
+                Vector3Int roundedPosition = new Vector3Int(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y), 0);
+                Vector3 offset = new Vector3((position.x - roundedPosition.x), (position.y - roundedPosition.y), 0);
+                gridObject = Instantiate(grid, Vector3.zero + new Vector3(offset.x, offset.y, player.transform.position.z), Quaternion.identity);
+                tilemapObject = gridObject.transform.GetChild(0).gameObject;
+
+                transform.parent = tilemapObject.transform;
+                collisionTilemap = tilemapObject.GetComponent<Tilemap>();
+                tilemapRigidbody2D = tilemapObject.GetComponent<Rigidbody2D>();
+                ToggleableScript tilemapToggleableScript = tilemapObject.GetComponent<ToggleableScript>();
+                tilemapToggleableScript.Toggle();
+                tilemapObject.GetComponent<TilemapRenderer>().enabled = false;
+
+                
+                //Tile tile = terrainController.GetTile(terrainController.GetTileID(name));
+                collisionTilemap.SetTile(roundedPosition, blankTile);
+
+                wheelableScript.ToggleMovingState();
+                wheelableScript.parentToggleableScript = tilemapToggleableScript;
+                tilemapRigidbody2D.mass = wheelableScript.mass;
+                totalWheelPower = wheelableScript.power;
+
+
+                Vector3 friendPosition;
+                Vector3Int roundedFriendPosition;
+                string friendName;
+                string name = entityScript.selfEntity.objName;
+                //make self parent of all friends
+                foreach (EntityController.Entity entity in friends)
                 {
-                    LookForFriends();
-                    doneLookingForFriends = true;
+                    WheelableScript friendWheelableScript = entity.obj.GetComponent<WheelableScript>();
+                    friendWheelableScript.parentEntity = entityScript.selfEntity;
+                    friendWheelableScript.parentToggleableScript = tilemapToggleableScript;
+                    entity.obj.transform.parent = tilemapObject.transform;
+                    friendWheelableScript.isParent = false;
+                    friendWheelableScript.ToggleMovingState();
 
-                    gridObject = Instantiate(grid, Vector3.zero + new Vector3(0, 0, player.transform.position.z), Quaternion.identity);
-                    tilemapObject = gridObject.transform.GetChild(0).gameObject;
-                    transform.parent = tilemapObject.transform;
-                    collisionTilemap = gridObject.GetComponentInChildren<Tilemap>();
-                    tilemapRigidbody2D = gridObject.GetComponentInChildren<Rigidbody2D>();
-                    ToggleableScript tilemapToggleableScript = gridObject.GetComponentInChildren<ToggleableScript>();
-                    tilemapToggleableScript.Toggle();
-                    gridObject.GetComponentInChildren<TilemapRenderer>().enabled = false;
+                    friendPosition = entity.obj.transform.position;
+                    roundedFriendPosition = new Vector3Int(Mathf.RoundToInt(friendPosition.x), Mathf.RoundToInt(friendPosition.y), 0);
+                    friendName = entity.objName;
+                    //tile = terrainController.GetTile(terrainController.GetTileID(friendName));
+                    collisionTilemap.SetTile(roundedFriendPosition, blankTile);
 
-                    Vector3 friendPosition;
-                    Vector3Int roundedFriendPosition;
-                    string friendName;
-
-                    wheelableScript.ToggleMovingState();
-                    wheelableScript.parentToggleableScript = tilemapToggleableScript;
-                    Vector3 position = transform.position;
-                    Vector3Int roundedPosition = new Vector3Int(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y), 0);
-                    string name = entityScript.selfEntity.objName;
-                    //Tile tile = terrainController.GetTile(terrainController.GetTileID(name));
-                    collisionTilemap.SetTile(roundedPosition, blankTile);
-
-                    tilemapRigidbody2D.mass = wheelMass;
-                    if (name == "wheel")//MAKE GENERAL
-                    {
-                        totalWheelPower = wheelPower;
-                    } else
-                    {
-                        totalWheelPower = 0;
-                    }
-
-                    //make self parent of all friends
-                    foreach (EntityController.Entity entity in friends)
-                    {
-                        WheelableScript friendWheelableScript = entity.obj.GetComponent<WheelableScript>();
-                        friendWheelableScript.parentEntity = entityScript.selfEntity;
-                        friendWheelableScript.parentToggleableScript = tilemapToggleableScript;
-                        entity.obj.transform.parent = tilemapObject.transform;
-                        friendWheelableScript.isParent = false;
-                        friendWheelableScript.ToggleMovingState();
-
-                        friendPosition = entity.obj.transform.position;
-                        roundedFriendPosition = new Vector3Int(Mathf.RoundToInt(friendPosition.x), Mathf.RoundToInt(friendPosition.y), 0);
-                        friendName = entity.objName;
-                        //tile = terrainController.GetTile(terrainController.GetTileID(friendName));
-                        collisionTilemap.SetTile(roundedFriendPosition, blankTile);
-
-                        tilemapRigidbody2D.mass += wheelMass;
-                        if (friendName == "wheel")//MAKE GENERAL
-                        {
-                            totalWheelPower += wheelPower;
-                        }
-                    }
-
-                    
-                } else
-                {
-                    //move
-                    if (tilemapRigidbody2D.velocity.magnitude < wheelSpeed)
-                    {
-                        tilemapRigidbody2D.AddForce(new Vector2(totalWheelPower, 0));
-                    }
-
+                    tilemapRigidbody2D.mass += friendWheelableScript.mass;
+                    totalWheelPower += friendWheelableScript.power;
                 }
+
+                Debug.Log("finished initiating car");
+
             } else
             {
-                //child
+
+                
+                //move the tilemap parent so all entities in the car move
+                if (tilemapRigidbody2D.velocity.magnitude < wheelSpeed)
+                {
+                    Debug.Log("moving car");
+                    tilemapRigidbody2D.AddForce(new Vector2(totalWheelPower, 0));
+                }
+
+                //update position of entities in the chunk dictionary
+                foreach (EntityController.Entity friend in friends)
+                {
+                    entityController.EntityMovedSoUpdateChunk(friend);
+                }
+                entityController.EntityMovedSoUpdateChunk(entityScript.selfEntity);
             }
-
-
-            entityController.EntityMovedSoUpdateChunk(entityScript.selfEntity);
         } else
         {
             if (doneLookingForFriends)
@@ -194,6 +189,8 @@ public class WheelScript : MonoBehaviour
                 }
                 else
                 {
+
+                    Debug.Log("un-initiating car");
                     //unparent all parts of whole
                     foreach (EntityController.Entity entity in friends)
                     {
