@@ -27,9 +27,6 @@ public class MinerScript : MonoBehaviour
     private void InitializeWheelableScript()
     {
         wheelableScript = GetComponent<WheelableScript>();
-        wheelableScript.parentEntity = entityScript.selfEntity;//set parent to self until part of a group
-        wheelableScript.parentToggleableScript = toggleableScript;
-        wheelableScript.isParent = true;
         wheelableScript.ToggleMovingState = ToggleMovingState;
     }
 
@@ -90,7 +87,7 @@ public class MinerScript : MonoBehaviour
         }
     }
 
-    public bool Step()
+    public EntityController.EntityStepData Step()
     {
         //check if coal underneath
         //if there is no coal entity, make one
@@ -107,6 +104,6 @@ public class MinerScript : MonoBehaviour
         }
 
         //never moves
-        return false;
+        return new EntityController.EntityStepData(false, false);
     }
 }

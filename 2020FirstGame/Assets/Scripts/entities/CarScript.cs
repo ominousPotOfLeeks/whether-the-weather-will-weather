@@ -1,17 +1,113 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class CarScript : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+
+    private EntityController entityController;
+    private EntityScript entityScript;
+    private ToggleableScript toggleableScript;
+    private Rigidbody2D tilemapRigidbody2D;
+    private GameObject tilemapObject;
+    private Tilemap collisionTilemap;
+
+    public Tile blankTile;
+
+    public float totalWheelPower;//force with which tilemap is pushed
+    public float totalMass;
+    public float wheelSpeed;
+
+    public List<EntityController.Entity> friends = new List<EntityController.Entity>();
+
+    private void Awake()
     {
-        //Debug.Log("hew howdy");
+        InitializeEntityScript();
+        entityController = GameObject.Find("EntityController").GetComponent<EntityController>();
+    }
+
+    public void Initialize()
+    {
+        friends = entityScript.selfEntity.childEntities;
+        AssignComponents();
+        tilemapObject.GetComponent<TilemapRenderer>().enabled = false;
+        PrepareFriends();
+    }
+
+    private void InitializeEntityScript()
+    {
+        entityScript = GetComponent<EntityScript>();
+        entityScript.step = Step;
+        entityScript.initialize = Initialize;
+    }
+
+    private void PrepareFriends()
+    {
+        totalWheelPower = 0;
+        totalMass = 0;
+
+        Vector3 friendPosition;
+        Vector3Int roundedFriendPosition;
+        WheelableScript friendWheelableScript;
+        foreach (EntityController.Entity entity in friends)
+        {
+            friendWheelableScript = entity.obj.GetComponent<WheelableScript>();
+            friendWheelableScript.disbanded = false;
+            entity.obj.transform.parent = tilemapObject.transform;
+            friendWheelableScript.ToggleMovingState();
+            entity.obj.GetComponent<EntityScript>().hasParent = true;
+
+            friendPosition = entity.obj.transform.position;
+            roundedFriendPosition = new Vector3Int(Mathf.RoundToInt(friendPosition.x), Mathf.RoundToInt(friendPosition.y), 0);
+            collisionTilemap.SetTile(roundedFriendPosition, blankTile);
+
+            totalMass += friendWheelableScript.mass;
+            totalWheelPower += friendWheelableScript.power;
+        }
+    }
+
+    private void AssignComponents()
+    {
+        tilemapObject = transform.GetChild(0).gameObject;
+        collisionTilemap = tilemapObject.GetComponent<Tilemap>();
+        tilemapRigidbody2D = tilemapObject.GetComponent<Rigidbody2D>();
+        toggleableScript = tilemapObject.GetComponent<ToggleableScript>();
+    }
+
+    //
+    private EntityController.EntityStepData Step()
+    {
+        if (!toggleableScript.state)
+        {
+            //move the tilemap parent so all entities in the car move
+            if (tilemapRigidbody2D.velocity.magnitude < wheelSpeed)
+            {
+                tilemapRigidbody2D.mass = totalMass;
+                tilemapRigidbody2D.AddForce(new Vector2(totalWheelPower, 0));
+            }
+        }
+
+        return new EntityController.EntityStepData(true, toggleableScript.state);
+    }
+
+    private void UnInitialize()
+    {
+        WheelableScript friendWheelableScript;
+        foreach (EntityController.Entity entity in friends)
+        {
+            friendWheelableScript = entity.obj.GetComponent<WheelableScript>();
+            friendWheelableScript.disbanded = true;
+            entity.obj.transform.parent = null;
+            friendWheelableScript.ToggleMovingState();
+        }
+        friends.Clear();
+
+        //Debug.Log("goodbye yall");
     }
 
     private void OnDestroy()
     {
-        //Debug.Log("goodbye yall");
+        UnInitialize();
     }
 }

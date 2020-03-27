@@ -43,7 +43,7 @@ public class SheepScript : MonoBehaviour
         counter = 0;
     }
 
-    public bool Step()
+    public EntityController.EntityStepData Step()
     {
         //do whatever we do for one step
 
@@ -69,7 +69,7 @@ public class SheepScript : MonoBehaviour
             moved = true;
         }//*/
 
-        return moved;
+        return new EntityController.EntityStepData(moved, false);
     }
 
     private void FixedUpdate()

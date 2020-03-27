@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 3422127444688887558}
   - component: {fileID: 3422127444688887559}
+  - component: {fileID: 4036248684144140190}
+  - component: {fileID: 2304767618873619647}
   m_Layer: 0
   m_Name: CollisionTilemap
   m_TagString: Untagged
@@ -44,6 +46,34 @@ Grid:
   m_CellGap: {x: 0, y: 0, z: 0}
   m_CellLayout: 0
   m_CellSwizzle: 0
+--- !u!114 &4036248684144140190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3422127444688887560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 975572f50a0b579478b7fcdb9e642791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blankTile: {fileID: 11400000, guid: 83a911ec9730da248805dfde79045e59, type: 2}
+  totalWheelPower: 0
+  totalMass: 0
+  wheelSpeed: 5
+--- !u!114 &2304767618873619647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3422127444688887560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ceb3411ef5ecf64ca45624000ad0125, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7054787527195762168
 GameObject:
   m_ObjectHideFlags: 0
@@ -57,8 +87,7 @@ GameObject:
   - component: {fileID: 7867401586681517591}
   - component: {fileID: 8701418520663600042}
   - component: {fileID: 3900263877619404810}
-  - component: {fileID: 4410143474755100396}
-  - component: {fileID: 7920567398257770261}
+  - component: {fileID: 7534711268287667212}
   m_Layer: 0
   m_Name: Tilemap
   m_TagString: Untagged
@@ -202,7 +231,7 @@ TilemapCollider2D:
   m_Offset: {x: 0, y: 0}
   m_MaximumTileChangeCount: 1000
   m_ExtrusionFactor: 0.00001
---- !u!114 &4410143474755100396
+--- !u!114 &7534711268287667212
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -215,15 +244,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   state: 0
---- !u!114 &7920567398257770261
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7054787527195762168}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 975572f50a0b579478b7fcdb9e642791, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

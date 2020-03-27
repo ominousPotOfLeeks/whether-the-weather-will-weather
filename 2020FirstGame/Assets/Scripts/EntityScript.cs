@@ -7,7 +7,10 @@ public class EntityScript : MonoBehaviour
 {
     //This class holds any data which ALL entities must have
 
-    public Func<bool> step;
+    public Func<EntityController.EntityStepData> step;
     public EntityController.Entity selfEntity;
+
+    public Action initialize = () => { };
+    public bool hasParent = false;
 
 }

@@ -362,6 +362,7 @@ MonoBehaviour:
   sheep: {fileID: 1928452092277898599, guid: eec02ccd4c6758942ba978b1e9d480bd, type: 3}
   miner: {fileID: 5530820140892555034, guid: 5df66b317a02f844e88c16faaaa0e4ff, type: 3}
   wheel: {fileID: 4634883756526501906, guid: ccfc54854d8e5a143a44608873cd21fd, type: 3}
+  car: {fileID: 3422127444688887560, guid: f0ba7d000342ae849ac46ba40f0bc8eb, type: 3}
   terrainController: {fileID: 981015622}
 --- !u!1 &519420028
 GameObject:

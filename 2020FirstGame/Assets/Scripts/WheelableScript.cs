@@ -5,12 +5,8 @@ using UnityEngine;
 
 public class WheelableScript : MonoBehaviour
 {
-    public EntityController.Entity parentEntity;
-
     [HideInInspector]
-    public ToggleableScript parentToggleableScript;
-    [HideInInspector]
-    public bool isParent;
+    public bool disbanded = true;
 
     public int power;//power to do wheel things (0 for non-wheel entities)
     public int mass;

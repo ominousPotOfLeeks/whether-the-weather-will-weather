@@ -12,12 +12,15 @@ public class EntityController : MonoBehaviour
     HashSet<Tuple<Entity, Tuple<int, int>>> entitiesWhichChangedChunk = 
         new HashSet<Tuple<Entity, Tuple<int, int>>>();
 
+    HashSet<Entity> entitiesToBeRemoved = new HashSet<Entity>();
+
     //stores pointers to the entities in chunkEntities
     //public List<Tuple<Tuple<int, int>, int>> activeEntities = new List<Tuple<Tuple<int, int>, int>>();
 
     public GameObject sheep;
     public GameObject miner;
     public GameObject wheel;
+    public GameObject car;
 
     public TerrainController terrainController;
 
@@ -29,10 +32,22 @@ public class EntityController : MonoBehaviour
         {
             ["sheep"] = sheep,
             ["miner"] = miner,
-            ["wheel"] = wheel
+            ["wheel"] = wheel,
+            ["car"] = car
         };
     }
 
+    public class EntityStepData
+    {
+        public bool hasMoved;
+        public bool tobeRemoved;
+
+        public EntityStepData(bool hasMoved, bool tobeRemoved)
+        {
+            this.hasMoved = hasMoved;
+            this.tobeRemoved = tobeRemoved;
+        }
+    }
 
     public class Entity
     {
@@ -43,10 +58,12 @@ public class EntityController : MonoBehaviour
         public int chunkEntityListIndex;
         public GameObject obj;
         public string objName;
-        public Func<bool> step;
+        public Func<EntityController.EntityStepData> step;
+        public List<Entity> childEntities;
 
-        public Entity(float x, float y, Tuple<int, int> chunk, GameObject obj, Func<bool> step, string objName)
+        public Entity(float x, float y, Tuple<int, int> chunk, GameObject obj, Func<EntityController.EntityStepData> step, string objName, List<Entity> childEntities)
         {
+            this.childEntities = childEntities;
             this.x = x;
             this.y = y;
             this.chunk = chunk;
@@ -80,10 +97,15 @@ public class EntityController : MonoBehaviour
             if ((entityScript = obj.GetComponent<EntityScript>()) != null)
             {
                 Entity entity = entityScript.selfEntity;
-                chunkEntities[entity.chunk].Remove(entity);
-                Destroy(obj);
+                RemoveEntity(entity);
             }
         }
+    }
+
+    public void RemoveEntity(Entity entity)
+    {
+        chunkEntities[entity.chunk].Remove(entity);
+        Destroy(entity.obj);
     }
 
     public GameObject GetObjectAtPosition(Vector3 position)
@@ -121,13 +143,13 @@ public class EntityController : MonoBehaviour
         }
     }
 
-    public void AddEntity(float x, float y, string objName)
+    public Entity AddEntity(float x, float y, string objName, List<Entity> childEntities = null)
     {
         //add to array but don't load
         Tuple<int, int> chunk = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(x), Mathf.RoundToInt(y));
 
         
-        Entity entity = new Entity(x, y, chunk, null, null, objName);
+        Entity entity = new Entity(x, y, chunk, null, null, objName, childEntities);
 
         if (!chunkEntities.ContainsKey(chunk))
         {
@@ -139,7 +161,11 @@ public class EntityController : MonoBehaviour
         {
             //adding entity to chunk that is already loaded, so entity will stay unloaded unless we load it now
             LoadEntity(entity);
+        } else
+        {
+            Debug.LogFormat("added unloaded entity: {0}", entity.objName);
         }
+        return entity;
     }
 
     public void UnloadChunkEntities(Tuple<int, int> chunk)
@@ -192,9 +218,10 @@ public class EntityController : MonoBehaviour
         {
             entity.obj = Instantiate(objNames[entity.objName], position, Quaternion.identity);
         }
-        
+
         entity.step = entity.obj.GetComponent<EntityScript>().step;
         entity.obj.GetComponent<EntityScript>().selfEntity = entity;
+        entity.obj.GetComponent<EntityScript>().initialize();
     }
 
     public void EntityMovedSoUpdateChunk(Entity entity)
@@ -209,7 +236,6 @@ public class EntityController : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
         if (terrainController.isGenerated)
@@ -226,10 +252,19 @@ public class EntityController : MonoBehaviour
                             //not loaded somehow
                             //Debug.LogFormat("chunk: {0}, x:{1}, y:{2}", chunk, entity.x, entity.y);
                         }
-                        else if (entity.step()) //if moved during step
+                        else
                         {
-                            //check if chunk changed
-                            EntityMovedSoUpdateChunk(entity);
+                            EntityStepData stepData = entity.step();
+                            
+                            if (stepData.tobeRemoved)
+                            {
+                                entitiesToBeRemoved.Add(entity);
+                            } 
+                            else if (stepData.hasMoved) //if moved during step
+                            {
+                                //check if chunk changed
+                                EntityMovedSoUpdateChunk(entity);
+                            }
                         }
                     }
                 }
@@ -252,6 +287,12 @@ public class EntityController : MonoBehaviour
                 chunkEntities[newChunk].Add(entity);//*/
             }
             entitiesWhichChangedChunk.Clear();
+
+            foreach (Entity entity in entitiesToBeRemoved)
+            {
+                RemoveEntity(entity);
+            }
+            entitiesToBeRemoved.Clear();
         }
         
         /*foreach (Tuple<Tuple<int, int>, int> entityPointer in activeEntities)
