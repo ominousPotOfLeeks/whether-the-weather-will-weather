@@ -60,8 +60,11 @@ public class EntityController : MonoBehaviour
         public string objName;
         public Func<EntityController.EntityStepData> step;
         public List<Entity> childEntities;
+        public bool hasParent;
+        public bool hasNonStandardPosition = false;
+        public Vector3 position;
 
-        public Entity(float x, float y, Tuple<int, int> chunk, GameObject obj, Func<EntityController.EntityStepData> step, string objName, List<Entity> childEntities)
+        public Entity(float x, float y, Tuple<int, int> chunk, GameObject obj, Func<EntityController.EntityStepData> step, string objName, bool hasParent, List<Entity> childEntities)
         {
             this.childEntities = childEntities;
             this.x = x;
@@ -70,6 +73,7 @@ public class EntityController : MonoBehaviour
             this.obj = obj;
             this.step = step;
             this.objName = objName;
+            this.hasParent = hasParent;
         }
     }
 
@@ -105,6 +109,7 @@ public class EntityController : MonoBehaviour
     public void RemoveEntity(Entity entity)
     {
         chunkEntities[entity.chunk].Remove(entity);
+        entity.obj.GetComponent<EntityScript>().remove();
         Destroy(entity.obj);
     }
 
@@ -143,19 +148,15 @@ public class EntityController : MonoBehaviour
         }
     }
 
-    public Entity AddEntity(float x, float y, string objName, List<Entity> childEntities = null)
+    public Entity AddEntity(float x, float y, string objName, bool hasParent = false, List<Entity> childEntities = null)
     {
         //add to array but don't load
         Tuple<int, int> chunk = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(x), Mathf.RoundToInt(y));
 
         
-        Entity entity = new Entity(x, y, chunk, null, null, objName, childEntities);
+        Entity entity = new Entity(x, y, chunk, null, null, objName, hasParent, childEntities);
 
-        if (!chunkEntities.ContainsKey(chunk))
-        {
-            chunkEntities[chunk] = new List<Entity>();
-        }
-        chunkEntities[chunk].Add(entity);//*/
+        AddChunkEntityListing(entity, chunk);
 
         if (terrainController.terrainArray.nextLoadedChunks.Contains(entity.chunk) || terrainController.terrainArray.loadedChunks.Contains(entity.chunk))
         {
@@ -174,7 +175,10 @@ public class EntityController : MonoBehaviour
         {
             foreach (Entity entity in chunkEntities[chunk])
             {
-                UnloadEntity(entity);
+                if (!entity.hasParent)
+                {
+                    UnloadEntity(entity);
+                }
             }
         }
     }
@@ -185,7 +189,10 @@ public class EntityController : MonoBehaviour
         {
             foreach (Entity entity in chunkEntities[chunk])
             {
-                LoadEntity(entity);
+                if (!entity.hasParent)
+                {
+                    LoadEntity(entity);
+                }
             }
         }
     }
@@ -197,9 +204,17 @@ public class EntityController : MonoBehaviour
         }
         else
         {
-            Vector2 position = entity.obj.transform.position;
+            Vector2 position = GetEntityPosition(entity);
             entity.x = position.x;
             entity.y = position.y;
+
+            if (entity.childEntities != null)
+            {
+                foreach (Entity childEntity in entity.childEntities)
+                {
+                    UnloadEntity(childEntity);
+                }
+            }
 
             entity.obj.GetComponent<EntityScript>().selfEntity = null;
             Destroy(entity.obj);
@@ -213,10 +228,18 @@ public class EntityController : MonoBehaviour
 
         if (entity.obj != null)
         {
-            Debug.Log("duplicate");
+            //Debug.LogFormat("duplicate instantiation of one entity: {0}", entity.objName);
         } else
         {
             entity.obj = Instantiate(objNames[entity.objName], position, Quaternion.identity);
+        }
+
+        if (entity.childEntities != null)
+        {
+            foreach (Entity childEntity in entity.childEntities)
+            {
+                LoadEntity(childEntity);
+            }
         }
 
         entity.step = entity.obj.GetComponent<EntityScript>().step;
@@ -227,64 +250,112 @@ public class EntityController : MonoBehaviour
     public void EntityMovedSoUpdateChunk(Entity entity)
     {
         //check if chunk changed
-        Vector2 position = entity.obj.transform.position;
+        Vector2 position = GetEntityPosition(entity);
+        
         Tuple<int, int> newChunk = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y));
-        if (entity.chunk != newChunk)
+        if (!terrainController.ChunksEqual(entity.chunk, newChunk))
         {
             //will need to be careful making this particular part threaded
             entitiesWhichChangedChunk.Add(new Tuple<Entity, Tuple<int, int>>(entity, newChunk));
         }
     }
 
+    public void AddChunkEntityListing(Entity entity, Tuple<int, int> chunk)
+    {
+        if (!chunkEntities.ContainsKey(chunk))
+        {
+            chunkEntities[chunk] = new List<Entity>();
+        }
+        chunkEntities[chunk].Add(entity);
+    }
+
+    public Vector2 GetEntityPosition(Entity entity)
+    {
+        Vector2 position;
+        if (entity.hasNonStandardPosition)
+        {
+            position = entity.position;
+        }
+        else
+        {
+            position = entity.obj.transform.position;
+        }
+        return position;
+    }
+
+    public List<Entity> GetCurrentEntities()
+    {
+        List<Entity> currentEntities = new List<Entity>();
+        foreach (Tuple<int, int> chunk in terrainController.terrainArray.loadedChunks)
+        {
+            if (chunkEntities.ContainsKey(chunk))//if there are any entities there
+            {
+                foreach (Entity entity in chunkEntities[chunk])
+                {
+                    currentEntities.Add(entity);
+                }
+            }
+        }
+        return currentEntities;
+    }
+
+    public void ChangeEntityChunk(Entity entity, Tuple<int, int> newChunk)
+    {
+        chunkEntities[entity.chunk].Remove(entity);
+        entity.chunk = newChunk;
+        AddChunkEntityListing(entity, newChunk);
+    }
+
     void FixedUpdate()
     {
         if (terrainController.isGenerated)
         {
-
-            foreach (Tuple<int, int> chunk in terrainController.terrainArray.loadedChunks)
+            List<Entity> currentEntities = GetCurrentEntities();
+            foreach(Entity entity in currentEntities)
             {
-                if (chunkEntities.ContainsKey(chunk))//if there are any entities there
+                if (entity.obj == null && !entity.hasParent)
                 {
-                    foreach (Entity entity in chunkEntities[chunk])
+                    //not loaded and not a child 
+                    Debug.LogFormat("entity not loaded chunk: {0}, x:{1}, y:{2}", entity.chunk, entity.x, entity.y);
+                }
+                else
+                {
+                    EntityStepData stepData = entity.step();
+
+                    if (stepData.tobeRemoved)
                     {
-                        if (entity.obj == null)
-                        {
-                            //not loaded somehow
-                            //Debug.LogFormat("chunk: {0}, x:{1}, y:{2}", chunk, entity.x, entity.y);
-                        }
-                        else
-                        {
-                            EntityStepData stepData = entity.step();
-                            
-                            if (stepData.tobeRemoved)
-                            {
-                                entitiesToBeRemoved.Add(entity);
-                            } 
-                            else if (stepData.hasMoved) //if moved during step
-                            {
-                                //check if chunk changed
-                                EntityMovedSoUpdateChunk(entity);
-                            }
-                        }
+                        entitiesToBeRemoved.Add(entity);
+                    }
+                    else if (stepData.hasMoved && !entity.hasParent)//only update chunk for non-child entities
+                    {
+                        EntityMovedSoUpdateChunk(entity);
                     }
                 }
             }
+
             foreach (Tuple<Entity, Tuple<int, int>> data in entitiesWhichChangedChunk)
             {
                 Entity entity = data.Item1;
                 Tuple<int, int> newChunk = data.Item2;
 
-                if (!terrainController.terrainArray.loadedChunks.Contains(newChunk)) {
-                    //if new chunk is not loaded, we also need to unload the entity
-                    UnloadEntity(entity);
-                }
-                chunkEntities[entity.chunk].Remove(entity);
-                entity.chunk = newChunk;
-                if (!chunkEntities.ContainsKey(newChunk))
+                if (!entity.hasParent)
                 {
-                    chunkEntities[newChunk] = new List<Entity>();
+                    if (!terrainController.terrainArray.loadedChunks.Contains(newChunk))
+                    {
+                        //if new chunk is not loaded, we also need to unload the entity
+                        UnloadEntity(entity);
+                    }
+
+                    if (entity.childEntities != null)
+                    {
+                        foreach(Entity childEntity in entity.childEntities)
+                        {
+                            ChangeEntityChunk(childEntity, newChunk);
+                        }
+                    }
+
+                    ChangeEntityChunk(entity, newChunk);
                 }
-                chunkEntities[newChunk].Add(entity);//*/
             }
             entitiesWhichChangedChunk.Clear();
 
@@ -294,10 +365,5 @@ public class EntityController : MonoBehaviour
             }
             entitiesToBeRemoved.Clear();
         }
-        
-        /*foreach (Tuple<Tuple<int, int>, int> entityPointer in activeEntities)
-        {
-            chunkEntities[entityPointer.Item1][entityPointer.Item2].step();
-        }//*/
     }
 }

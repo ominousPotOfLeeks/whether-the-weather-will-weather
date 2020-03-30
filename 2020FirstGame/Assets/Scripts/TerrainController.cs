@@ -51,6 +51,7 @@ public class TerrainController : MonoBehaviour
 
     public Tilemap tilesNotSolid;
     public Tilemap tilesSolid;
+    public Tilemap tilesUnloadedWall;//requires its own grid so it can be moved easily
     public Tile grassTile;
     public Tile dirtTile;
     public Tile coalTile;
@@ -389,7 +390,52 @@ public class TerrainController : MonoBehaviour
         }
         terrainArray.loadedChunks = new HashSet<Tuple<int, int>>(terrainArray.nextLoadedChunks);
 
+        if (isGenerated)
+        {
+            UpdateUnloadedWallPosition(centrex, centrey);
+        }
+        else
+        {
+            GenerateUnloadedWall(centrex, centrey);
+        }
+    }
 
+    public void UpdateUnloadedWallPosition(int centrex, int centrey)
+    {
+        tilesUnloadedWall.transform.parent.position = new Vector3(centrex * chunkLength, centrey * chunkLength);
+    }
+
+    public void GenerateUnloadedWall(int centrex, int centrey)
+    {
+        tilesUnloadedWall.transform.parent.position = new Vector3(centrex * chunkLength, centrey * chunkLength);
+        int chunkSize = terrainArray.GetChunkSize();
+        int x;
+        int y = (centrey - LoadedChunksRadius) * chunkSize - 1;
+        //top wall
+        for (x=(centrex - LoadedChunksRadius) * chunkSize - 1; x < (centrex + LoadedChunksRadius) * chunkSize + 1; x++)
+        {
+            tilesUnloadedWall.SetTile(new Vector3Int(x, y, 0), grassTile);
+        }
+        y = (centrey + LoadedChunksRadius) * chunkSize;
+        //bottom wall
+        for (x = (centrex - LoadedChunksRadius) * chunkSize - 1; x < (centrex + LoadedChunksRadius) * chunkSize + 1; x++)
+        {
+            tilesUnloadedWall.SetTile(new Vector3Int(x, y, 0), grassTile);
+        }
+
+
+        x = (centrex - LoadedChunksRadius) * chunkSize - 1;
+        //left wall
+        for (y = (centrey - LoadedChunksRadius) * chunkSize; y < (centrey + LoadedChunksRadius) * chunkSize; y++)
+        {
+            tilesUnloadedWall.SetTile(new Vector3Int(x, y, 0), grassTile);
+        }
+        x = (centrex + LoadedChunksRadius) * chunkSize;
+        //right wall
+        for (y = (centrey - LoadedChunksRadius) * chunkSize; y < (centrey + LoadedChunksRadius) * chunkSize; y++)
+        {
+            tilesUnloadedWall.SetTile(new Vector3Int(x, y, 0), grassTile);
+        }
     }
 
     public void UnloadChunk(int chunkX, int chunkY)
@@ -523,93 +569,6 @@ public class TerrainController : MonoBehaviour
         }
     }
 
-    public int[,] GenerateIteration(int[,] oldMap)
-    {
-        int[,] newMap = new int[terrainWidth, terrainHeight];
-        int numNeighbours;
-        int numRocks;
-        BoundsInt neighbourBounds = new BoundsInt(-1, -1, 0, 3, 3, 1);
-
-        for (int x = 0; x < terrainWidth; x++)
-        {
-            for (int y = 0; y < terrainHeight; y++)
-            {
-                numNeighbours = 0;
-                numRocks = 0;
-                foreach (var neighbour in neighbourBounds.allPositionsWithin)
-                {
-                    if (neighbour.x == 0 && neighbour.y == 0) { continue; }
-                    else
-                    {
-                        Vector3Int neighbourOnMap = new Vector3Int(neighbour.x + x, neighbour.y + y, neighbour.z);
-                        if (neighbourOnMap.x >= 0 && neighbourOnMap.x < terrainWidth && neighbourOnMap.y >= 0 && neighbourOnMap.y < terrainHeight)
-                        {
-                            if (oldMap[neighbourOnMap.x, neighbourOnMap.y] == 1)
-                            {
-                                numNeighbours += 1;
-                            }
-                            else if (oldMap[neighbourOnMap.x, neighbourOnMap.y] == 2)
-                            {
-                                numNeighbours -= 2;
-                            }
-                            else if (oldMap[neighbourOnMap.x, neighbourOnMap.y] == 4)
-                            {
-                                numRocks += 1;
-                                numNeighbours += 2;
-                            }
-                        }
-                        else
-                        {
-                            numNeighbours += 1;
-                        }
-                    }
-                }
-
-                if (oldMap[x, y] == 1)
-                {
-                    if (numNeighbours < grassDeathThreshold)
-                    {
-                        newMap[x, y] = 0;
-                    }
-                    else if (numRocks > rockBirthThreshold)
-                    {
-                        newMap[x, y] = 4;
-                    }
-                    else
-                    {
-                        newMap[x, y] = 1;
-                    }
-                }
-                else if (oldMap[x, y] == 0)
-                {
-                    if (numNeighbours > grassBirthThreshold)
-                    {
-                        newMap[x, y] = 1;
-                    }
-                    else if (numNeighbours < -coalBirthThreshold)
-                    {
-                        newMap[x, y] = 2;
-                    }
-                    else
-                    {
-                        newMap[x, y] = 0;
-                    }
-                }
-                else if (oldMap[x, y] == 2)
-                {
-                    newMap[x, y] = numNeighbours > -coalDeathThreshold ? 0 : 2;
-                }
-                else if (oldMap[x, y] == 4)
-                {
-                    //if not enough rocks around, or there is no grass around and we aren't surrounded by rock
-                    newMap[x, y] = numRocks < rockDeathThreshold || (numNeighbours < 1 && numRocks < 8) ? 1 : 4;
-                }
-            }
-        }
-
-        return newMap;
-    }
-
     public void ClearMap(bool complete)
     {
         tilesNotSolid.ClearAllTiles();
@@ -619,5 +578,10 @@ public class TerrainController : MonoBehaviour
         {
             terrainArray = null;
         }
+    }
+
+    public bool ChunksEqual(Tuple<int, int> chunk1, Tuple<int, int> chunk2)
+    {
+        return chunk1.Item1 == chunk2.Item1 && chunk1.Item2 == chunk2.Item2;
     }
 }

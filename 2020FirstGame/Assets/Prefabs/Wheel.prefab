@@ -141,10 +141,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 211649dec9d05e048b8204f2b16c8aca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parentToggleableScript: {fileID: 0}
-  isParent: 0
-  power: 5
-  mass: 10
+  disbanded: 1
+  power: 50
+  mass: 100
 --- !u!61 &6704962664091295719
 BoxCollider2D:
   m_ObjectHideFlags: 0

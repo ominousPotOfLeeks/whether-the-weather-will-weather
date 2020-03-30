@@ -164,7 +164,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 211649dec9d05e048b8204f2b16c8aca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parentToggleableScript: {fileID: 0}
-  isParent: 0
+  disbanded: 1
   power: 0
-  mass: 10
+  mass: 100

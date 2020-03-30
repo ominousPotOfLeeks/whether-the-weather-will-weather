@@ -214,7 +214,7 @@ public class PlayerController : MonoBehaviour
             if (targetVelocity != Vector3.zero)
             {
                 Tuple<int, int> nextChunkCoords = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(myRigidbody2D.position.x), Mathf.RoundToInt(myRigidbody2D.position.y));
-                if (!(nextChunkCoords.Item1 == currentChunkCoords.Item1 && nextChunkCoords.Item2 == currentChunkCoords.Item2))
+                if (!terrainController.ChunksEqual(nextChunkCoords, currentChunkCoords))
                 {
                     //update terrain
                     //terrainController.GenerateTerrain(x, y);
@@ -269,4 +269,6 @@ public class PlayerController : MonoBehaviour
     {
         return Mathf.Approximately(Mathf.RoundToInt(myFloat * gridPrecision) / gridPrecision, Mathf.RoundToInt(myFloat));
     }*/
+
+    
 }

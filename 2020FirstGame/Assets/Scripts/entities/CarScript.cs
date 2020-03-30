@@ -33,6 +33,8 @@ public class CarScript : MonoBehaviour
         AssignComponents();
         tilemapObject.GetComponent<TilemapRenderer>().enabled = false;
         PrepareFriends();
+        entityScript.selfEntity.hasNonStandardPosition = true;
+        entityScript.selfEntity.position = tilemapObject.transform.position;
     }
 
     private void InitializeEntityScript()
@@ -40,12 +42,16 @@ public class CarScript : MonoBehaviour
         entityScript = GetComponent<EntityScript>();
         entityScript.step = Step;
         entityScript.initialize = Initialize;
+        entityScript.remove = Remove;
     }
 
     private void PrepareFriends()
     {
         totalWheelPower = 0;
         totalMass = 0;
+
+        Vector3 position = transform.position;
+        Vector3Int roundedPosition = new Vector3Int(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y), 0);
 
         Vector3 friendPosition;
         Vector3Int roundedFriendPosition;
@@ -56,11 +62,11 @@ public class CarScript : MonoBehaviour
             friendWheelableScript.disbanded = false;
             entity.obj.transform.parent = tilemapObject.transform;
             friendWheelableScript.ToggleMovingState();
-            entity.obj.GetComponent<EntityScript>().hasParent = true;
+            entity.hasParent = true;
 
             friendPosition = entity.obj.transform.position;
             roundedFriendPosition = new Vector3Int(Mathf.RoundToInt(friendPosition.x), Mathf.RoundToInt(friendPosition.y), 0);
-            collisionTilemap.SetTile(roundedFriendPosition, blankTile);
+            collisionTilemap.SetTile(roundedFriendPosition - roundedPosition, blankTile);
 
             totalMass += friendWheelableScript.mass;
             totalWheelPower += friendWheelableScript.power;
@@ -86,12 +92,13 @@ public class CarScript : MonoBehaviour
                 tilemapRigidbody2D.mass = totalMass;
                 tilemapRigidbody2D.AddForce(new Vector2(totalWheelPower, 0));
             }
+            entityScript.selfEntity.position = tilemapObject.transform.position;
         }
 
         return new EntityController.EntityStepData(true, toggleableScript.state);
     }
 
-    private void UnInitialize()
+    private void Remove()
     {
         WheelableScript friendWheelableScript;
         foreach (EntityController.Entity entity in friends)
@@ -104,10 +111,5 @@ public class CarScript : MonoBehaviour
         friends.Clear();
 
         //Debug.Log("goodbye yall");
-    }
-
-    private void OnDestroy()
-    {
-        UnInitialize();
     }
 }

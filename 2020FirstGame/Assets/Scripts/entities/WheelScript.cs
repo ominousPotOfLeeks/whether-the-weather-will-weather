@@ -105,9 +105,7 @@ public class WheelScript : MonoBehaviour
             Debug.Log("initiating car");
 
             Vector3 position = transform.position;
-            Vector3Int roundedPosition = new Vector3Int(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y), 0);
-            Vector3 offset = new Vector3((position.x - roundedPosition.x), (position.y - roundedPosition.y), 0);
-            GameObject gridObject = entityController.AddEntity(offset.x, offset.y, "car", friends).obj;
+            GameObject gridObject = entityController.AddEntity(position.x, position.y, "car", false, friends).obj;
             if (gridObject == null)
             {
                 Debug.Log("car not loaded");
