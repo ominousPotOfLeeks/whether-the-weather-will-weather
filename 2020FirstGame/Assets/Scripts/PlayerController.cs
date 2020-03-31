@@ -208,11 +208,11 @@ public class PlayerController : MonoBehaviour
             myRigidbody2D.velocity = Vector3.SmoothDamp(myRigidbody2D.velocity, targetVelocity, ref myVelocity, movementSmoothing);
             //myRigidbody2D.velocity = targetVelocity;
             //myTransform.transform.Translate(targetVelocity);
-
-            MoveCamera();
+            
             //Check if player has entered different chunk
-            if (targetVelocity != Vector3.zero)
+            if (myRigidbody2D.velocity != Vector2.zero)
             {
+                MoveCamera();
                 Tuple<int, int> nextChunkCoords = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(myRigidbody2D.position.x), Mathf.RoundToInt(myRigidbody2D.position.y));
                 if (!terrainController.ChunksEqual(nextChunkCoords, currentChunkCoords))
                 {

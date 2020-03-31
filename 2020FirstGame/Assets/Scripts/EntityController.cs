@@ -22,9 +22,13 @@ public class EntityController : MonoBehaviour
     public GameObject wheel;
     public GameObject car;
 
+    public int objectPoolInitialSize;
+
     public TerrainController terrainController;
+    public ObjectPooler objectPooler;
 
     public Dictionary<string, GameObject> objNames;
+    public Dictionary<string, List<GameObject>> objectPools = new Dictionary<string, List<GameObject>>();
 
     private void Start()
     {
@@ -35,6 +39,11 @@ public class EntityController : MonoBehaviour
             ["wheel"] = wheel,
             ["car"] = car
         };
+
+        foreach (string objName in objNames.Keys)
+        {
+            objectPools[objName] = (objectPooler.AddObjectPool(objNames[objName], objectPoolInitialSize));
+        }
     }
 
     public class EntityStepData
@@ -110,7 +119,7 @@ public class EntityController : MonoBehaviour
     {
         chunkEntities[entity.chunk].Remove(entity);
         entity.obj.GetComponent<EntityScript>().remove();
-        Destroy(entity.obj);
+        entity.obj.SetActive(false);
     }
 
     public GameObject GetObjectAtPosition(Vector3 position)
@@ -164,7 +173,7 @@ public class EntityController : MonoBehaviour
             LoadEntity(entity);
         } else
         {
-            Debug.LogFormat("added unloaded entity: {0}", entity.objName);
+            //Debug.LogFormat("added unloaded entity: {0}", entity.objName);
         }
         return entity;
     }
@@ -208,6 +217,14 @@ public class EntityController : MonoBehaviour
             entity.x = position.x;
             entity.y = position.y;
 
+            //Debug.LogFormat("1childentities {0}", entity.childEntities.Count);
+
+            EntityScript entityScript = entity.obj.GetComponent<EntityScript>();
+            entityScript.selfEntity = null;
+            entityScript.unInitialize();
+
+            //Debug.LogFormat("2childentities {0}", entity.childEntities.Count);
+
             if (entity.childEntities != null)
             {
                 foreach (Entity childEntity in entity.childEntities)
@@ -215,9 +232,8 @@ public class EntityController : MonoBehaviour
                     UnloadEntity(childEntity);
                 }
             }
-
-            entity.obj.GetComponent<EntityScript>().selfEntity = null;
-            Destroy(entity.obj);
+            Debug.LogFormat("unloaded {0}", entity.objName);
+            entity.obj.SetActive(false);
             entity.obj = null;
         }
     }
@@ -231,7 +247,14 @@ public class EntityController : MonoBehaviour
             //Debug.LogFormat("duplicate instantiation of one entity: {0}", entity.objName);
         } else
         {
-            entity.obj = Instantiate(objNames[entity.objName], position, Quaternion.identity);
+            entity.obj = objectPooler.GetObjectFromPool(objectPools[entity.objName]);
+            if (entity.obj == null)
+            {
+                objectPooler.IncreaseObjectPoolSize(objectPools[entity.objName], objNames[entity.objName], objectPoolInitialSize);
+                entity.obj = objectPooler.GetObjectFromPool(objectPools[entity.objName]);
+            }
+            entity.obj.transform.position = position;
+            entity.obj.SetActive(true);
         }
 
         if (entity.childEntities != null)
@@ -242,9 +265,10 @@ public class EntityController : MonoBehaviour
             }
         }
 
-        entity.step = entity.obj.GetComponent<EntityScript>().step;
-        entity.obj.GetComponent<EntityScript>().selfEntity = entity;
-        entity.obj.GetComponent<EntityScript>().initialize();
+        EntityScript entityScript = entity.obj.GetComponent<EntityScript>();
+        entity.step = entityScript.step;
+        entityScript.selfEntity = entity;
+        entityScript.initialize();
     }
 
     public void EntityMovedSoUpdateChunk(Entity entity)
@@ -326,7 +350,7 @@ public class EntityController : MonoBehaviour
                     {
                         entitiesToBeRemoved.Add(entity);
                     }
-                    else if (stepData.hasMoved && !entity.hasParent)//only update chunk for non-child entities
+                    else if (!entity.hasParent)//only update chunk for non-child entities
                     {
                         EntityMovedSoUpdateChunk(entity);
                     }

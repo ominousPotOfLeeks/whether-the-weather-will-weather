@@ -11,6 +11,7 @@ public class EntityScript : MonoBehaviour
     public EntityController.Entity selfEntity;
 
     public Action initialize = () => { };
+    public Action unInitialize = () => { };
     public Action remove = () => { };
 
 }

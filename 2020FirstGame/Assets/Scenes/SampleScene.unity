@@ -326,6 +326,7 @@ GameObject:
   m_Component:
   - component: {fileID: 307515532}
   - component: {fileID: 307515533}
+  - component: {fileID: 307515534}
   m_Layer: 0
   m_Name: EntityController
   m_TagString: Untagged
@@ -363,7 +364,21 @@ MonoBehaviour:
   miner: {fileID: 5530820140892555034, guid: 5df66b317a02f844e88c16faaaa0e4ff, type: 3}
   wheel: {fileID: 4634883756526501906, guid: ccfc54854d8e5a143a44608873cd21fd, type: 3}
   car: {fileID: 3422127444688887560, guid: f0ba7d000342ae849ac46ba40f0bc8eb, type: 3}
+  objectPoolInitialSize: 5
   terrainController: {fileID: 981015622}
+  objectPooler: {fileID: 307515534}
+--- !u!114 &307515534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 307515531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cf196da2455b9d4a819b054b8fcf42c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -417,7 +432,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 7
+  orthographic size: 12
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -817,8 +832,8 @@ MonoBehaviour:
   scale2: 0.01
   weight2: 40
   tilemapSize: {x: 120, y: 120, z: 1}
-  chunkLength: 4
-  LoadedChunksRadius: 4
+  chunkLength: 6
+  LoadedChunksRadius: 6
   tilesNotSolid: {fileID: 1785641012}
   tilesSolid: {fileID: 1054610552}
   tilesUnloadedWall: {fileID: 1334418757}
@@ -1155,7 +1170,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.000030517578, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 800, y: 428.2}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1333275754

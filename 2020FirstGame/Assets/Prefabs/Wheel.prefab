@@ -142,7 +142,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   disbanded: 1
-  power: 50
+  power: 200
   mass: 100
 --- !u!61 &6704962664091295719
 BoxCollider2D:

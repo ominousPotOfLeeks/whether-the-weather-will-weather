@@ -4,36 +4,35 @@ using UnityEngine;
 
 public class ObjectPooler : MonoBehaviour
 {
-    public static ObjectPooler SharedInstance;
-
-    public List<GameObject> pooledObjects;
-    public GameObject objectToPool;
-    public int amountToPool;
-
-    void Awake()
+    public List<GameObject> AddObjectPool(GameObject objectToPool, int amountToPool)
     {
-        SharedInstance = this;
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        pooledObjects = new List<GameObject>();
+        List<GameObject> pooledObjects = new List<GameObject>();
         for (int i = 0; i < amountToPool; i++)
         {
-            GameObject obj = (GameObject)Instantiate(objectToPool);
+            GameObject obj = Instantiate(objectToPool);
             obj.SetActive(false);
             pooledObjects.Add(obj);
         }
+        return pooledObjects;
     }
 
-    public GameObject GetPooledObject()
+    public void IncreaseObjectPoolSize(List<GameObject> objectPool, GameObject objectToPool, int amountToAdd)
     {
-        for (int i = 0; i < pooledObjects.Count; i++)
+        for (int i = 0; i < amountToAdd; i++)
         {
-            if (!pooledObjects[i].activeInHierarchy)
+            GameObject obj = Instantiate(objectToPool);
+            obj.SetActive(false);
+            objectPool.Add(obj);
+        }
+    }
+
+    public GameObject GetObjectFromPool(List<GameObject> objectPool)
+    {
+        for (int i = 0; i < objectPool.Count; i++)
+        {
+            if (!objectPool[i].activeInHierarchy)
             {
-                return pooledObjects[i];
+                return objectPool[i];
             }
         } 
         return null;
