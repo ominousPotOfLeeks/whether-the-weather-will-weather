@@ -4,11 +4,10 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.Tilemaps;
 using System;
+using System.Linq.Expressions;
 
 public class TerrainController : MonoBehaviour
 {
-
-    public int sheepChance;
     [Range(0, 100)]
     public int sheepWeight;
     [Range(0,100)]
@@ -63,9 +62,6 @@ public class TerrainController : MonoBehaviour
 
     public int coalResourceAmount;
 
-    int terrainWidth;
-    int terrainHeight;
-
     [HideInInspector]
     public bool isGenerated = false;
 
@@ -76,6 +72,10 @@ public class TerrainController : MonoBehaviour
 
     public EntityController entityController;
 
+    /// <summary>
+    /// A dictionary of "chunks" which are 2D square arrays of some given size. Acts to the outside like an infinite 
+    /// 2D array, but provides information about its chunk positions if required.
+    /// </summary>
     public class TerrainArray
     {
         readonly int chunkSize;
@@ -94,6 +94,13 @@ public class TerrainController : MonoBehaviour
             return chunkSize;
         }
 
+        /// <summary>
+        /// Returns the key which corresponds to the chunk containing the coordinate (x, y). This key is pretty much
+        /// (x/chunkSize, y/chunkSize), but shifted for negatives.
+        /// </summary>
+        /// <param name="x">global x coordinate</param>
+        /// <param name="y">global y coordinate</param>
+        /// <returns>the key which corresponds to the chunk containing the coordinate (x, y)</returns>
         public Tuple<int, int> GetChunkCoords(int x, int y)
         {
             int chunkX;
@@ -118,6 +125,16 @@ public class TerrainController : MonoBehaviour
             return new Tuple<int, int>(chunkX, chunkY);
         }
 
+        /// <summary>
+        /// Returns the key which corresponds to the chunk containing the coordinate (x, y), 
+        /// and the local coordinate of (x, y) within the chunk. This key is pretty much
+        /// (x/chunkSize, y/chunkSize), but shifted for negatives, and the local coordinate
+        /// is the remainder from this division.
+        /// </summary>
+        /// <param name="x">global x coordinate</param>
+        /// <param name="y">global y coordinate</param>
+        /// <returns>the key which corresponds to the chunk containing the coordinate (x, y), 
+        /// and the local coordinate of (x, y) within the chunk</returns>
         public Tuple<int, int, int, int> GetChunkAndLocalCoords(int x, int y)
         {
             int chunkX;
@@ -149,6 +166,14 @@ public class TerrainController : MonoBehaviour
             return new Tuple<int, int, int, int>(chunkX, chunkY, localX, localY);
         }
 
+        /// <summary>
+        /// Accesses terrain array and returns the value at the given global coordinates,
+        /// or -1 if the chunk containing those coordinates has not been generated.
+        /// </summary>
+        /// <param name="x">global x coordinate</param>
+        /// <param name="y">global y coordinate</param>
+        /// <returns>the value at the given global coordinates,
+        /// or -1 if the chunk containing those coordinates has not been generated</returns>
         public int Get(int x, int y)
         {
             //always assumes chunk had been generated
@@ -184,7 +209,13 @@ public class TerrainController : MonoBehaviour
             
         }
 
-        public int GetData(int x, int y)
+        /// <summary>
+        /// Accesses extra data about a tile. This extra data is for tiles that have changing behaviour
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public int GetTileData(int x, int y)
         {
             Tuple<int, int, int, int> nums = GetChunkAndLocalCoords(x, y);
             Tuple<int, int> chunkCoords = new Tuple<int, int>(nums.Item1, nums.Item2);
@@ -199,7 +230,7 @@ public class TerrainController : MonoBehaviour
             return chunkDataLookUp[chunkCoords][localX, localY];
         }
 
-        public void SetData(int x, int y, int value)
+        public void SetTileData(int x, int y, int value)
         {
             Tuple<int, int, int, int> nums = GetChunkAndLocalCoords(x, y);
             Tuple<int, int> chunkCoords = new Tuple<int, int>(nums.Item1, nums.Item2);
@@ -232,15 +263,7 @@ public class TerrainController : MonoBehaviour
         tileIDs.Add("sheep", 5);
         tileIDs.Add("miner", 6);
         tileIDs.Add("wheel", 7);
-        IDtiles = new Tile[numTileTypes];
-        IDtiles[0] = dirtTile;
-        IDtiles[1] = grassTile;
-        IDtiles[2] = coalTile;
-        IDtiles[3] = ironTile;
-        IDtiles[4] = rockTile;
-        IDtiles[5] = sheepTile;
-        IDtiles[6] = minerTile;
-        IDtiles[7] = wheelTile;
+        IDtiles = new Tile[] { dirtTile, grassTile, coalTile, ironTile, rockTile, sheepTile, minerTile, wheelTile};
         tileTypeIsSolid = new bool[numTileTypes];
         tileTypeIsSolid[0] = false;
         tileTypeIsSolid[1] = false;
@@ -248,30 +271,17 @@ public class TerrainController : MonoBehaviour
         tileTypeIsSolid[3] = false;
         tileTypeIsSolid[4] = true;
         tileTypeIsSolid[5] = true;
-        tileTypeIsSolid[6] = true;
+        tileTypeIsSolid[6] = false;
         tileTypeIsSolid[7] = true;
-
-        terrainWidth = tilemapSize.x;
-        terrainHeight = tilemapSize.y;
 
         xOffset = UnityEngine.Random.Range(1, 99999);
         yOffset = UnityEngine.Random.Range(1, 99999);
     }
-
-    public bool IsItSolidAt(Vector3 position)
-    {
-        int targetTile = GetTileAtPosition(position);
-        if (targetTile >= 0)
-        {
-            return tileTypeIsSolid[targetTile];
-        }
-        else
-        {
-            return false; // don't let player move out of bounds
-        }
-        
-    }
-
+    /// <summary>
+    /// Rounds a vector to integers
+    /// </summary>
+    /// <param name="position"></param>
+    /// <returns></returns>
     public int[] VectorToGrid(Vector3 position)
     {
         Vector3Int roundedPosition = new Vector3Int(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y), 0);
@@ -349,15 +359,11 @@ public class TerrainController : MonoBehaviour
         if (terrainArray == null)
         {
             //first generation
-            ClearMap(false);
             terrainArray = new TerrainArray(chunkLength);
         }
 
-        //first find chunks to load
-        //HashSet<Tuple<int, int>> nextLoadedChunks = new HashSet<Tuple<int, int>>();
         terrainArray.nextLoadedChunks.Clear();
 
-        //put a for loop through chunks so that below function runs on one chunk at a time
         for (int i = centrex - LoadedChunksRadius; i < centrex + LoadedChunksRadius; i++)
         {
             for (int j = centrey - LoadedChunksRadius; j < centrey + LoadedChunksRadius; j++)
@@ -566,17 +572,6 @@ public class TerrainController : MonoBehaviour
         {
             //make tile visible
             tilesNotSolid.SetTile(position, IDtiles[tileID]);
-        }
-    }
-
-    public void ClearMap(bool complete)
-    {
-        tilesNotSolid.ClearAllTiles();
-        tilesSolid.ClearAllTiles();
-
-        if (complete)
-        {
-            terrainArray = null;
         }
     }
 

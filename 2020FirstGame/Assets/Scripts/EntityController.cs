@@ -22,13 +22,17 @@ public class EntityController : MonoBehaviour
     public GameObject wheel;
     public GameObject car;
 
-    public int objectPoolInitialSize;
+    public int objectPoolInitialSizeSheep;
+    public int objectPoolInitialSizeMiner;
+    public int objectPoolInitialSizeWheel;
+    public int objectPoolInitialSizeCar;
 
     public TerrainController terrainController;
     public ObjectPooler objectPooler;
 
     public Dictionary<string, GameObject> objNames;
     public Dictionary<string, List<GameObject>> objectPools = new Dictionary<string, List<GameObject>>();
+    public Dictionary<string, int> objectPoolInitialSizes;
 
     private void Start()
     {
@@ -39,10 +43,17 @@ public class EntityController : MonoBehaviour
             ["wheel"] = wheel,
             ["car"] = car
         };
+        objectPoolInitialSizes = new Dictionary<string, int>
+        {
+            ["sheep"] = objectPoolInitialSizeSheep,
+            ["miner"] = objectPoolInitialSizeMiner,
+            ["wheel"] = objectPoolInitialSizeWheel,
+            ["car"] = objectPoolInitialSizeCar
+        };
 
         foreach (string objName in objNames.Keys)
         {
-            objectPools[objName] = (objectPooler.AddObjectPool(objNames[objName], objectPoolInitialSize));
+            objectPools[objName] = (objectPooler.AddObjectPool(objNames[objName], objectPoolInitialSizes[objName]));
         }
     }
 
@@ -250,7 +261,7 @@ public class EntityController : MonoBehaviour
             entity.obj = objectPooler.GetObjectFromPool(objectPools[entity.objName]);
             if (entity.obj == null)
             {
-                objectPooler.IncreaseObjectPoolSize(objectPools[entity.objName], objNames[entity.objName], objectPoolInitialSize);
+                objectPooler.IncreaseObjectPoolSize(objectPools[entity.objName], objNames[entity.objName], objectPoolInitialSizes[entity.objName]);
                 entity.obj = objectPooler.GetObjectFromPool(objectPools[entity.objName]);
             }
             entity.obj.transform.position = position;

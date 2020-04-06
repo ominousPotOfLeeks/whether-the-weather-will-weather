@@ -62,7 +62,7 @@ public class MinerScript : MonoBehaviour
         {
             //we are on coal
             Vector2Int roundedPosition = new Vector2Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.y));
-            int tileData = terrainController.terrainArray.GetData(roundedPosition.x, roundedPosition.y);
+            int tileData = terrainController.terrainArray.GetTileData(roundedPosition.x, roundedPosition.y);
             Tuple<int, int> mineData;
             if (tileData == -1)
             {
@@ -77,7 +77,7 @@ public class MinerScript : MonoBehaviour
                 mineData = new Tuple<int, int>(-1, mineData.Item2);
                 terrainController.terrainArray.Set(roundedPosition.x, roundedPosition.y, terrainController.GetTileID("dirt"));
             }
-            terrainController.terrainArray.SetData(roundedPosition.x, roundedPosition.y, mineData.Item1);
+            terrainController.terrainArray.SetTileData(roundedPosition.x, roundedPosition.y, mineData.Item1);
 
             Debug.LogFormat("Mined {0} coal, leaving {1}", mineData.Item2, mineData.Item1);
         } else

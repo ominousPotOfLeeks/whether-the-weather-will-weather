@@ -55,6 +55,15 @@ public class PlayerController : MonoBehaviour
         myRigidbody2D = GetComponent<Rigidbody2D>();
         //myTransform = GetComponent<Transform>();
         cursorScript = cursorSelection.GetComponent<CursorScript>();
+        InitializeCamera();
+    }
+
+    /// <summary>
+    /// Converts settings for camera into positions on screen to make a bounding box, (which the player is kept within
+    /// by moving the camera)
+    /// </summary>
+    void InitializeCamera()
+    {
         cam = Camera.main;
         camThresholdLeft = camThresholdPercentHorizontal * Screen.width * 0.01f;
         camThresholdRight = (100 - camThresholdPercentHorizontal) * Screen.width * 0.01f;
@@ -145,8 +154,26 @@ public class PlayerController : MonoBehaviour
                 hotbarController.ScrollSelection(true);
             }
         }
+
+        //Check if player has entered different chunk
+        if (myRigidbody2D.velocity != Vector2.zero)
+        {
+            MoveCamera();
+            Tuple<int, int> nextChunkCoords = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(myRigidbody2D.position.x), Mathf.RoundToInt(myRigidbody2D.position.y));
+            if (!terrainController.ChunksEqual(nextChunkCoords, currentChunkCoords))
+            {
+                //update terrain
+                //terrainController.GenerateTerrain(x, y);
+                //Debug.LogFormat("loading some terrain. coords from {0} to {1}", currentChunkCoords, nextChunkCoords);
+                terrainController.GenerateTerrain(nextChunkCoords.Item1, nextChunkCoords.Item2);
+                currentChunkCoords = nextChunkCoords;
+            }
+        }
     }
 
+    /// <summary>
+    /// When right mouse becomes clicked, this function is triggered for one frame
+    /// </summary>
     private void OnRightClick()
     {
         if (inInventory)
@@ -160,6 +187,9 @@ public class PlayerController : MonoBehaviour
         
     }
 
+    /// <summary>
+    /// While right mouse is down, this function is triggered once per frame
+    /// </summary>
     private void OnRightClickContinuous()
     {
         if (inInventory)
@@ -172,9 +202,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// When left mouse becomes clicked, this function is triggered for one frame. 
+    /// For events like dragging or colouring in where the mouse is still down
+    /// </summary>
     private void OnClickContinuous()
     {
-        //for events like dragging or colouring in where the mouse is still down
         if (inInventory)
         {
             //do inventory controls
@@ -185,7 +218,9 @@ public class PlayerController : MonoBehaviour
         }
 
     }
-
+    /// <summary>
+    /// When left mouse becomes clicked, this function is triggered for one frame
+    /// </summary>
     private void OnClick()
     {
         if (inInventory)
@@ -208,24 +243,12 @@ public class PlayerController : MonoBehaviour
             myRigidbody2D.velocity = Vector3.SmoothDamp(myRigidbody2D.velocity, targetVelocity, ref myVelocity, movementSmoothing);
             //myRigidbody2D.velocity = targetVelocity;
             //myTransform.transform.Translate(targetVelocity);
-            
-            //Check if player has entered different chunk
-            if (myRigidbody2D.velocity != Vector2.zero)
-            {
-                MoveCamera();
-                Tuple<int, int> nextChunkCoords = terrainController.terrainArray.GetChunkCoords(Mathf.RoundToInt(myRigidbody2D.position.x), Mathf.RoundToInt(myRigidbody2D.position.y));
-                if (!terrainController.ChunksEqual(nextChunkCoords, currentChunkCoords))
-                {
-                    //update terrain
-                    //terrainController.GenerateTerrain(x, y);
-                    //Debug.LogFormat("loading some terrain. coords from {0} to {1}", currentChunkCoords, nextChunkCoords);
-                    terrainController.GenerateTerrain(nextChunkCoords.Item1, nextChunkCoords.Item2);
-                    currentChunkCoords = nextChunkCoords;
-                }
-            }
         }
     }
 
+    /// <summary>
+    /// Moves camera if player is outside of camera bounding box
+    /// </summary>
     private void MoveCamera()
     {
         Vector3 playerPosition = cam.WorldToScreenPoint(myRigidbody2D.position);
@@ -253,22 +276,4 @@ public class PlayerController : MonoBehaviour
         }
         cam.transform.position = cam.ScreenToWorldPoint(newPosition);
     }
-
-
-    /*bool AreWeOnGrid()
-    {
-        return IsThisVectorOnTheGrid(transform.position - new Vector3(0.5f, 0.5f, 0.0f));
-    }
-
-    bool IsThisVectorOnTheGrid(Vector3 myVector3)
-    {
-        return IsThisInteger(myVector3.x) && IsThisInteger(myVector3.y);
-    }
-
-    bool IsThisInteger(float myFloat)
-    {
-        return Mathf.Approximately(Mathf.RoundToInt(myFloat * gridPrecision) / gridPrecision, Mathf.RoundToInt(myFloat));
-    }*/
-
-    
 }

@@ -364,7 +364,10 @@ MonoBehaviour:
   miner: {fileID: 5530820140892555034, guid: 5df66b317a02f844e88c16faaaa0e4ff, type: 3}
   wheel: {fileID: 4634883756526501906, guid: ccfc54854d8e5a143a44608873cd21fd, type: 3}
   car: {fileID: 3422127444688887560, guid: f0ba7d000342ae849ac46ba40f0bc8eb, type: 3}
-  objectPoolInitialSize: 5
+  objectPoolInitialSizeSheep: 100
+  objectPoolInitialSizeMiner: 50
+  objectPoolInitialSizeWheel: 50
+  objectPoolInitialSizeCar: 10
   terrainController: {fileID: 981015622}
   objectPooler: {fileID: 307515534}
 --- !u!114 &307515534
@@ -815,7 +818,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 241cfcdcea1f4044c8793905324c6a32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sheepChance: 0
   sheepWeight: 25
   grassWeight: 28
   coalWeight: 10
@@ -832,8 +834,8 @@ MonoBehaviour:
   scale2: 0.01
   weight2: 40
   tilemapSize: {x: 120, y: 120, z: 1}
-  chunkLength: 6
-  LoadedChunksRadius: 6
+  chunkLength: 4
+  LoadedChunksRadius: 9
   tilesNotSolid: {fileID: 1785641012}
   tilesSolid: {fileID: 1054610552}
   tilesUnloadedWall: {fileID: 1334418757}
